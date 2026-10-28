@@ -24,7 +24,7 @@ export const RemotionRoot: React.FC = () => {
   return (
     <Composition
       id="Cerita"
-      component={VectorStory}
+      component={Story}
       durationInFrames={30}
       fps={30}
       width={1080}
