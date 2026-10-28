@@ -1,0 +1,301 @@
+{
+  "durationInFrames": 965,
+  "watermark": "",
+  "music": false,
+  "style": "stick",
+  "cta": "Tulis satu katamu di komentar",
+  "scenes": [
+    {
+      "title": "Kalau kamu masih *nunggu*",
+      "start": 0,
+      "accent": "#FFD700",
+      "bg": "room",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "think",
+          "walkTo": 540,
+          "enter": "left",
+          "flip": false
+        }
+      ],
+      "prop": "think",
+      "card": null,
+      "visuals": []
+    },
+    {
+      "title": "momen yang *sempurna* banget baru mau mulai",
+      "start": 2,
+      "accent": "#00FF7F",
+      "bg": "dawn",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "shock",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": "bulb",
+      "card": null,
+      "visuals": [
+        {
+          "word": "jam",
+          "en": "clock",
+          "emoji": "⏰"
+        }
+      ]
+    },
+    {
+      "title": "jualan, mending *dengerin* aku dulu deh.",
+      "start": 4.066,
+      "accent": "#1E90FF",
+      "bg": "day",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "point",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": null,
+      "card": null,
+      "visuals": []
+    },
+    {
+      "title": "Coba mulai aja dulu *pelan-pelan*,",
+      "start": 6.693,
+      "accent": "#FFA500",
+      "bg": "office",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 200,
+          "pose": "walk",
+          "walkTo": 880,
+          "enter": "left",
+          "flip": false
+        }
+      ],
+      "prop": null,
+      "card": null,
+      "visuals": []
+    },
+    {
+      "title": "misalnya nawarin ke temen deket lewat *chat*.",
+      "start": 8.758,
+      "accent": "#FF69B4",
+      "bg": "night",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "wave",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": "phone",
+      "card": null,
+      "visuals": [
+        {
+          "word": "pesan",
+          "en": "message",
+          "emoji": "💬"
+        }
+      ]
+    },
+    {
+      "title": "Terus, nggak usah terlalu *pusing* mikirin logo ya,",
+      "start": 11.635,
+      "accent": "#FF4500",
+      "bg": "dusk",
+      "chars": [],
+      "prop": null,
+      "card": {
+        "type": "list",
+        "title": "Gak Perlu Logo?",
+        "items": [
+          "Fokus jualan dulu",
+          "Pilih nama simpel",
+          "Warna menarik",
+          "Logo bisa nanti"
+        ]
+      },
+      "visuals": []
+    },
+    {
+      "title": "yang paling penting itu barangnya ada *foto* aslinya.",
+      "start": 14.826,
+      "accent": "#32CD32",
+      "bg": "day",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "cheer",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": "phone",
+      "card": null,
+      "visuals": [
+        {
+          "word": "kamera",
+          "en": "camera",
+          "emoji": "📸"
+        }
+      ]
+    },
+    {
+      "title": "Nah, rajin-rajin deh *posting* di status WhatsApp",
+      "start": 18.204,
+      "accent": "#00CED1",
+      "bg": "room",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "wave",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": "laptop",
+      "card": null,
+      "visuals": []
+    },
+    {
+      "title": "pas jam *makan* siang.",
+      "start": 20.45,
+      "accent": "#FFD700",
+      "bg": "dusk",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "idle",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": "fork",
+      "card": null,
+      "visuals": [
+        {
+          "word": "makan",
+          "en": "food",
+          "emoji": "🍱"
+        }
+      ]
+    },
+    {
+      "title": "Kamu bakal *kaget* lho,",
+      "start": 22.708,
+      "accent": "#FF1493",
+      "bg": "night",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "shock",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": "orb",
+      "card": null,
+      "visuals": []
+    },
+    {
+      "title": "ternyata *jualan* itu nggak seserem yang kamu bayangin.",
+      "start": 24.5,
+      "accent": "#ADFF2F",
+      "bg": "office",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 300,
+          "pose": "walk",
+          "walkTo": 300,
+          "enter": "left",
+          "flip": false
+        },
+        {
+          "type": "boss",
+          "x": 780,
+          "pose": "idle",
+          "walkTo": 780,
+          "enter": "right",
+          "flip": true
+        }
+      ],
+      "prop": "money",
+      "card": null,
+      "visuals": [
+        {
+          "word": "uang",
+          "en": "money",
+          "emoji": "💰"
+        }
+      ]
+    },
+    {
+      "title": "Simpan ya *postingan* ini,",
+      "start": 27.587,
+      "accent": "#8A2BE2",
+      "bg": "room",
+      "chars": [],
+      "prop": null,
+      "card": {
+        "type": "tool",
+        "name": "Mulai Jualan",
+        "tagline": "Gerak sekarang juga",
+        "items": [
+          "Siapkan foto produk",
+          "Hubungi teman",
+          "Update status"
+        ],
+        "cta": "Simpan Video"
+      },
+      "visuals": []
+    },
+    {
+      "title": "biar kamu makin *berani* buat langsung gerak!",
+      "start": 30,
+      "accent": "#FF4500",
+      "bg": "stage",
+      "chars": [
+        {
+          "type": "girl",
+          "x": 540,
+          "pose": "cheer",
+          "walkTo": 540,
+          "enter": null,
+          "flip": false
+        }
+      ],
+      "prop": "confetti",
+      "card": null,
+      "visuals": [
+        {
+          "word": "piala",
+          "en": "trophy",
+          "emoji": "🏆"
+        }
+      ]
+    }
+  ]
+}

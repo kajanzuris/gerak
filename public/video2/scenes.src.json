@@ -1,0 +1,227 @@
+{
+  "durationInFrames": 900,
+  "music": false,
+  "style": "block",
+  "scenes": [
+    {
+      "title": "mau *mulai*",
+      "start": 3.494,
+      "accent": "#FFD700",
+      "bg": "dusk",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "idle",
+          "type": "block"
+        }
+      ]
+    },
+    {
+      "title": "*jualan,*",
+      "start": 4.066,
+      "accent": "#FF4500",
+      "bg": "room",
+      "chars": [
+        {
+          "x": 440,
+          "pose": "tremble",
+          "type": "block"
+        }
+      ],
+      "prop": "phone"
+    },
+    {
+      "title": "*mending* *dengerin* aku dulu deh.",
+      "start": 4.563,
+      "accent": "#1E90FF",
+      "bg": "stage",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "point",
+          "type": "block"
+        }
+      ],
+      "prop": "crowd"
+    },
+    {
+      "title": "Coba *mulai* aja dulu *pelan-pelan,*",
+      "start": 6.693,
+      "accent": "#9370DB",
+      "bg": "night",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "think",
+          "type": "block"
+        }
+      ],
+      "prop": "orb"
+    },
+    {
+      "title": "*misalnya* *nawarin* ke temen deket lewat chat.",
+      "start": 8.758,
+      "accent": "#FF6347",
+      "bg": "day",
+      "chars": [
+        {
+          "x": 440,
+          "pose": "wave",
+          "type": "block"
+        }
+      ]
+    },
+    {
+      "title": "*Terus,*",
+      "start": 11.635,
+      "accent": "#00FF7F",
+      "bg": "office",
+      "chars": [
+        {
+          "x": 200,
+          "pose": "walk",
+          "type": "block",
+          "walkTo": 600
+        }
+      ],
+      "prop": "bulb"
+    },
+    {
+      "title": "nggak usah *terlalu* pusing *mikirin* logo ya,",
+      "start": 12.034,
+      "accent": "#FF8C00",
+      "bg": "dawn",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "idle",
+          "type": "block"
+        }
+      ]
+    },
+    {
+      "title": "yang paling *penting* itu *barangnya* ada foto aslinya.",
+      "start": 14.826,
+      "accent": "#ADFF2F",
+      "bg": "dusk",
+      "chars": [
+        {
+          "x": 440,
+          "pose": "cheer",
+          "type": "block"
+        }
+      ],
+      "prop": "think"
+    },
+    {
+      "title": "Kalau kamu masih *nunggu* momen yang *sempurna* banget baru",
+      "start": 0,
+      "accent": "#FFA500",
+      "bg": "dawn",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "sad",
+          "type": "block"
+        }
+      ],
+      "prop": "shadow"
+    },
+    {
+      "title": "Nah,",
+      "start": 18.204,
+      "accent": "#FF69B4",
+      "bg": "room",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "sad",
+          "type": "block"
+        }
+      ]
+    },
+    {
+      "title": "*rajin-rajin* deh posting di status *WhatsApp* pas jam makan",
+      "start": 18.477,
+      "accent": "#00CED1",
+      "bg": "stage",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "idle",
+          "type": "block"
+        }
+      ],
+      "prop": "shadow"
+    },
+    {
+      "title": "*siang.*",
+      "start": 22.299,
+      "accent": "#FFFF00",
+      "bg": "night",
+      "chars": [
+        {
+          "x": 440,
+          "pose": "tremble",
+          "type": "block"
+        }
+      ]
+    },
+    {
+      "title": "Kamu *bakal* *kaget* lho,",
+      "start": 22.708,
+      "accent": "#FFA500",
+      "bg": "day",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "point",
+          "type": "block"
+        }
+      ],
+      "prop": "phone"
+    },
+    {
+      "title": "*ternyata* jualan itu nggak seserem yang kamu *bayangin.*",
+      "start": 24.084,
+      "accent": "#FFD700",
+      "bg": "office",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "think",
+          "type": "block"
+        }
+      ],
+      "prop": "crowd"
+    },
+    {
+      "title": "*Simpan* ya *postingan* ini,",
+      "start": 27.587,
+      "accent": "#FF4500",
+      "bg": "dawn",
+      "chars": [
+        {
+          "x": 440,
+          "pose": "wave",
+          "type": "block"
+        }
+      ],
+      "prop": "orb"
+    },
+    {
+      "title": "biar kamu makin *berani* buat *langsung* gerak!",
+      "start": 29.2,
+      "accent": "#1E90FF",
+      "bg": "stage",
+      "chars": [
+        {
+          "x": 500,
+          "pose": "cheer",
+          "type": "block"
+        }
+      ],
+      "prop": "confetti"
+    }
+  ]
+}
