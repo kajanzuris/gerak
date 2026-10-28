@@ -1,5 +1,6 @@
 import { CalculateMetadataFunction, Composition, staticFile } from "remotion";
-import { StoryProps, VectorStory, VideoData } from "./VectorStory";
+  import { StoryProps, VideoData } from "./VectorStory";
+  import { Story } from "./Story";
 
 const calc: CalculateMetadataFunction<StoryProps> = async ({ props }) => {
   const res = await fetch(staticFile(`${props.name}/scenes.json`));
