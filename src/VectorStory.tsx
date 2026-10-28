@@ -25,7 +25,7 @@ type Scn = { title: string; start: number; accent: string; bg: string; chars: Ch
 // waktu kata (detik) hasil tools/prepare.py; s = indeks adegan
 type Word = { w: string; hl: boolean; a: number; b: number; s: number };
 
-export type VideoData = { durationInFrames: number; watermark?: string; music?: boolean; cta?: string; words?: Word[]; env?: number[]; style?: "stick" | "robot" | "block" | "sprite"; scenes: Scn[] };
+export type VideoData = { durationInFrames: number; watermark?: string; music?: boolean; cta?: string; words?: Word[]; env?: number[]; style?: "stick" | "robot" | "block" | "sprite" | "explainer"; scenes: Scn[] };
 export type StoryProps = { name: string; data?: VideoData };
 
 // Kartu lama menyimpan semua isi di satu string `value` → ubah ke field terstruktur (aman untuk data lama maupun baru)
@@ -108,7 +108,7 @@ const Stick: React.FC<{ pose: Pose; color: string; f: number; type?: string; tal
 };
 
 // Karakter BLOK (gaya game, ORISINAL): kepala & badan kotak, lengan/kaki balok. Pose dan lip-sync sama dengan Stick.
-const Block: React.FC<{ pose: Pose; color: string; f: number; type?: string; talk?: number }> = ({ pose, color, f, type, talk }) => {
+export const Block: React.FC<{ pose: Pose; color: string; f: number; type?: string; talk?: number }> = ({ pose, color, f, type, talk }) => {
   const talking = talk !== undefined && talk > 0.07;
   const breathe = Math.sin(f / 9) * 3 - (talking ? (talk as number) * 3 : 0);
   const blink = f % 90 < 4;
