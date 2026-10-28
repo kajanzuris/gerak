@@ -1,299 +1,124 @@
 {
-  "durationInFrames": 965,
-  "watermark": "",
-  "music": false,
-  "style": "stick",
-  "cta": "Tulis satu katamu di komentar",
+  "style": "explainer",
+  "brand": "NamaBrandSaya",
+  "tag": "Tips Jualan",
+  "accent": "#e5252a",
+  "char": "boss",
+  "charColor": "#222222",
+  "cta": "Link-nya di bio",
   "scenes": [
     {
-      "title": "Kalau kamu masih *nunggu*",
       "start": 0,
-      "accent": "#FFD700",
-      "bg": "room",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "think",
-          "walkTo": 540,
-          "enter": "left",
-          "flip": false
-        }
-      ],
-      "prop": "think",
-      "card": null,
-      "visuals": []
+      "title": "Eh, *jujur* ya,",
+      "small": 1,
+      "mascot": "center",
+      "pose": "wave",
+      "stage": []
     },
     {
-      "title": "momen yang *sempurna* banget baru mau mulai",
-      "start": 2,
-      "accent": "#00FF7F",
-      "bg": "dawn",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "shock",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": "bulb",
-      "card": null,
-      "visuals": [
-        {
-          "word": "jam",
-          "en": "clock",
-          "emoji": "⏰"
-        }
-      ]
+      "start": 0.9,
+      "title": "*aku* berharap banget ada yang",
+      "small": 1,
+      "mascot": "right",
+      "pose": "think",
+      "stage": []
     },
     {
-      "title": "jualan, mending *dengerin* aku dulu deh.",
-      "start": 4.066,
-      "accent": "#1E90FF",
-      "bg": "day",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "point",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": null,
-      "card": null,
-      "visuals": []
+      "start": 2.4,
+      "title": "*kasih* tahu aku soal *ini*",
+      "small": 2,
+      "stage": []
     },
     {
-      "title": "Coba mulai aja dulu *pelan-pelan*,",
-      "start": 6.693,
-      "accent": "#FFA500",
-      "bg": "office",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 200,
-          "pose": "walk",
-          "walkTo": 880,
-          "enter": "left",
-          "flip": false
-        }
-      ],
-      "prop": null,
-      "card": null,
-      "visuals": []
+      "start": 4,
+      "title": "dari dulu tentang gimana *caranya*",
+      "small": 4,
+      "stage": []
     },
     {
-      "title": "misalnya nawarin ke temen deket lewat *chat*.",
-      "start": 8.758,
-      "accent": "#FF69B4",
-      "bg": "night",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "wave",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": "phone",
-      "card": null,
-      "visuals": [
-        {
-          "word": "pesan",
-          "en": "message",
-          "emoji": "💬"
-        }
-      ]
+      "start": 5.9,
+      "title": "*berani* jualan. Nah, mending kamu",
+      "small": 2,
+      "stage": []
     },
     {
-      "title": "Terus, nggak usah terlalu *pusing* mikirin logo ya,",
-      "start": 11.635,
-      "accent": "#FF4500",
-      "bg": "dusk",
-      "chars": [],
-      "prop": null,
-      "card": {
-        "type": "list",
-        "title": "Gak Perlu Logo?",
-        "items": [
-          "Fokus jualan dulu",
-          "Pilih nama simpel",
-          "Warna menarik",
-          "Logo bisa nanti"
-        ]
-      },
-      "visuals": []
+      "start": 7.9,
+      "title": "coba *tawarin* barangnya ke *teman*",
+      "small": 2,
+      "mascot": "left",
+      "pose": "point",
+      "stage": []
     },
     {
-      "title": "yang paling penting itu barangnya ada *foto* aslinya.",
-      "start": 14.826,
-      "accent": "#32CD32",
-      "bg": "day",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "cheer",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": "phone",
-      "card": null,
-      "visuals": [
-        {
-          "word": "kamera",
-          "en": "camera",
-          "emoji": "📸"
-        }
-      ]
+      "start": 9.7,
+      "title": "dekat dulu deh. Terus, *fokus*",
+      "small": 3,
+      "mascot": "right",
+      "pose": "idle",
+      "stage": []
     },
     {
-      "title": "Nah, rajin-rajin deh *posting* di status WhatsApp",
-      "start": 18.204,
-      "accent": "#00CED1",
-      "bg": "room",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "wave",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": "laptop",
-      "card": null,
-      "visuals": []
+      "start": 11.6,
+      "title": "saja buat bantu *nyelesaiin* masalah",
+      "small": 3,
+      "stage": []
     },
     {
-      "title": "pas jam *makan* siang.",
-      "start": 20.45,
-      "accent": "#FFD700",
-      "bg": "dusk",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "idle",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": "fork",
-      "card": null,
-      "visuals": [
-        {
-          "word": "makan",
-          "en": "food",
-          "emoji": "🍱"
-        }
-      ]
+      "start": 13.7,
+      "title": "mereka pakai *produkmu* itu. Habis",
+      "small": 2,
+      "mascot": "center",
+      "pose": "cheer",
+      "stage": []
     },
     {
-      "title": "Kamu bakal *kaget* lho,",
-      "start": 22.708,
-      "accent": "#FF1493",
-      "bg": "night",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 540,
-          "pose": "shock",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": "orb",
-      "card": null,
-      "visuals": []
+      "start": 15.7,
+      "title": "itu, nggak usah dengerin *komentar*",
+      "small": 5,
+      "stage": []
     },
     {
-      "title": "ternyata *jualan* itu nggak seserem yang kamu bayangin.",
-      "start": 24.5,
-      "accent": "#ADFF2F",
-      "bg": "office",
-      "chars": [
-        {
-          "type": "girl",
-          "x": 300,
-          "pose": "walk",
-          "walkTo": 300,
-          "enter": "left",
-          "flip": false
-        },
-        {
-          "type": "boss",
-          "x": 780,
-          "pose": "idle",
-          "walkTo": 780,
-          "enter": "right",
-          "flip": true
-        }
-      ],
-      "prop": "money",
-      "card": null,
-      "visuals": [
-        {
-          "word": "uang",
-          "en": "money",
-          "emoji": "💰"
-        }
-      ]
+      "start": 17.6,
+      "title": "*negatif* orang lain ya. Nanti",
+      "small": 4,
+      "mascot": "left",
+      "pose": "wave",
+      "stage": []
     },
     {
-      "title": "Simpan ya *postingan* ini,",
-      "start": 27.587,
-      "accent": "#8A2BE2",
-      "bg": "room",
-      "chars": [],
-      "prop": null,
-      "card": {
-        "type": "tool",
-        "name": "Mulai Jualan",
-        "tagline": "Gerak sekarang juga",
-        "items": [
-          "Siapkan foto produk",
-          "Hubungi teman",
-          "Update status"
-        ],
-        "cta": "Simpan Video"
-      },
-      "visuals": []
+      "start": 19.5,
+      "title": "kamu pasti bakal *ketagihan* kok",
+      "small": 4,
+      "stage": []
     },
     {
-      "title": "biar kamu makin *berani* buat langsung gerak!",
-      "start": 30,
-      "accent": "#FF4500",
-      "bg": "stage",
-      "chars": [
+      "start": 21.3,
+      "title": "pas sudah dapat *transferan*",
+      "small": 3,
+      "mascot": "right",
+      "pose": "cheer",
+      "stage": []
+    },
+    {
+      "start": 22.8,
+      "title": "pertama. Simpan video ini ya biar",
+      "small": 1,
+      "mascot": "left",
+      "pose": "point",
+      "stage": []
+    },
+    {
+      "start": 25.1,
+      "title": "kamu nggak *ragu-ragu* lagi.",
+      "small": 2,
+      "mascot": "center",
+      "pose": "idle",
+      "stage": [
         {
-          "type": "girl",
-          "x": 540,
-          "pose": "cheer",
-          "walkTo": 540,
-          "enter": null,
-          "flip": false
-        }
-      ],
-      "prop": "confetti",
-      "card": null,
-      "visuals": [
-        {
-          "word": "piala",
-          "en": "trophy",
-          "emoji": "🏆"
+          "type": "callout",
+          "title": "kamu nggak ragu-ragu lagi.",
+          "sub": "NamaBrandSaya",
+          "cta": "Link-nya di bio"
         }
       ]
     }
