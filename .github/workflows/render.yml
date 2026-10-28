@@ -7,9 +7,9 @@ on:
         required: true
         default: "video1"
       scale:
-        description: "Skala render: 1 = 1080x1920, 0.667 = 720x1280 (lebih cepat)"
+        description: "Skala render: 1 = 1080x1920, 0.75 = 810x1440, 0.5 = 540x960"
         required: true
-        default: "0.667"
+        default: "0.75"
 jobs:
   render:
     runs-on: ubuntu-latest
