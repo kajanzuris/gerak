@@ -22,7 +22,7 @@ POSE = {'idle', 'point', 'shock', 'sad', 'cheer', 'wave', 'walk', 'tremble', 'th
 CARD = {'list', 'stat', 'bars', 'tool'}
 CT = {'girl', 'boss', 'robot', 'block', 'sprite'}
 STYLE = {'stick', 'robot', 'block', 'sprite', 'explainer'}
-STAGE = {'window', 'compare', 'tree', 'files', 'dialog', 'callout', 'list', 'stat'}
+STAGE = {'window', 'compare', 'tree', 'files', 'dialog', 'callout', 'list', 'stat', 'image'}
 ROW = {'bubble', 'check', 'input', 'note', 'buttons', 'files'}
 MASCOT = {'left', 'center', 'right'}
 err, warn = [], []
@@ -61,6 +61,10 @@ for i, s in enumerate(sc):
                 for r_i, r in enumerate(b.get('rows') or []):
                     if r.get('k') not in ROW: err.append(f"adegan {i}: stage[{j}].rows[{r_i}] k '{r.get('k')}' tidak dikenal")
                     check_at(i, f'stage[{j}].rows[{r_i}]', r.get('at'), s)
+            if b.get('type') == 'image':
+                src = b.get('src')
+                if not src: err.append(f'adegan {i}: stage[{j}] image butuh src')
+                elif not os.path.exists(f'{D}/{src}'): err.append(f"adegan {i}: file gambar '{src}' belum ada di {D}/ (upload ke folder itu, nama harus persis)")
             if b.get('type') == 'compare' and not (b.get('left') and b.get('right')): err.append(f'adegan {i}: stage[{j}] compare butuh left dan right')
             if b.get('type') == 'tree' and not b.get('cols'): err.append(f'adegan {i}: stage[{j}] tree butuh cols')
     else:
