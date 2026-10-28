@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Audio, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
+import { AbsoluteFill, Audio, Img, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { loadFont } from "@remotion/google-fonts/Poppins";
 import { Block } from "./VectorStory";
 import type { StoryProps } from "./VectorStory";
@@ -28,7 +28,10 @@ type Row = {
 type Col = { title: string; tone?: string; items: string[] };
 type TreeCol = { head: string; mid?: string; tag?: string; low?: string };
 type Item = {
-  type: "window" | "compare" | "tree" | "files" | "dialog" | "callout" | "list" | "stat";
+  type: "window" | "compare" | "tree" | "files" | "dialog" | "callout" | "list" | "stat" | "image";
+  src?: string;
+  caption?: string;
+  h?: number;
   at?: string | number;
   title?: string;
   tone?: string;
@@ -63,8 +66,8 @@ type Data = {
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 const norm = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-type Cx = { ws: W[]; base: number; t: number; accent: string };
-const Ctx = React.createContext<Cx>({ ws: [], base: 0, t: 0, accent: C.red });
+type Cx = { ws: W[]; base: number; t: number; accent: string; name: string };
+const Ctx = React.createContext<Cx>({ ws: [], base: 0, t: 0, accent: C.red, name: "" });
 
 // waktu (detik, absolut) kapan sebuah elemen muncul: kata tertentu di title, detik relatif, atau default
 const resolveT = (at: string | number | undefined, cx: Cx, fallback: number) => {
@@ -364,6 +367,21 @@ const StatView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
   );
 };
 
+const ImageView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
+  const { t, name } = React.useContext(Ctx);
+  const zoom = 1 + 0.06 * clamp01((t - t0) / 6); // zoom pelan supaya gambar diam tidak terasa mati
+  return (
+    <Appear t0={t0}>
+      <div style={{ ...card, padding: 14 }}>
+        <div style={{ height: b.h || 640, borderRadius: 22, overflow: "hidden", background: C.soft }}>
+          {b.src ? <Img src={staticFile(`${name}/${b.src}`)} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }} /> : null}
+        </div>
+        {b.caption ? <div style={{ fontSize: 28, fontWeight: 600, textAlign: "center", margin: "14px 0 4px", color: C.mute }}>{b.caption}</div> : null}
+      </div>
+    </Appear>
+  );
+};
+
 const StageItem: React.FC<{ b: Item; i: number }> = ({ b, i }) => {
   const cx = React.useContext(Ctx);
   const t0 = resolveT(b.at, cx, 0.15 + i * 0.35);
@@ -375,6 +393,7 @@ const StageItem: React.FC<{ b: Item; i: number }> = ({ b, i }) => {
     case "callout": return <CalloutView b={b} t0={t0} />;
     case "list": return <ListView b={b} t0={t0} />;
     case "stat": return <StatView b={b} t0={t0} />;
+    case "image": return <ImageView b={b} t0={t0} />;
     case "files":
       return (
         <Appear t0={t0}>
@@ -453,7 +472,7 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
   return (
     <AbsoluteFill style={{ backgroundColor: C.bg, backgroundImage: "radial-gradient(#d9d2c1 2px, transparent 2.5px)", backgroundSize: "36px 36px", fontFamily: FONT, color: C.ink }}>
       <Audio src={staticFile(name + "/mix.wav")} />
-      <Ctx.Provider value={{ ws, base, t, accent }}>
+      <Ctx.Provider value={{ ws, base, t, accent, name }}>
         <Header brand={data.brand || "Brand"} tag={data.tag || ""} />
         <div style={{ position: "absolute", left: 50, right: 50, top: 190, height: 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10, textAlign: "center" }}>
           <Headline key={idx} ws={ws} small={sc.small ?? 0} />
