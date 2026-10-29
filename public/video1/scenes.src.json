@@ -1,102 +1,128 @@
 {
   "style": "explainer",
-  "brand": "NamaBrandSaya",
   "tag": "Mental Jualan",
-  "accent": "#e5252a",
-  "char": "boss",
+  "accent": "#07e9c3",
+  "char": "robot",
   "charColor": "#222222",
-  "cta": "Link-nya di bio",
   "scenes": [
     {
       "start": 0,
-      "title": "Eh, kenapa sih kamu masih *ngerasa* *takut* buat jualan terus?",
       "small": 3,
-      "mascot": "center",
+      "title": "Eh, kenapa sih kamu masih *ngerasa*",
+      "mascot": "left",
       "pose": "think",
       "stage": []
     },
     {
-      "start": 3.6,
-      "title": "Padahal barangnya kan udah *keren* banget, lho.",
+      "start": 2.2,
       "small": 0,
+      "title": "*takut* buat *jualan* terus?",
       "stage": [
         {
           "type": "image",
           "src": "img/img01.png",
-          "caption": "Produk Premium"
+          "caption": "Rasa takut jualan"
         }
       ]
     },
     {
-      "start": 6.3,
-      "title": "Gini deh, coba kamu *pake* dulu *produknya* sendiri",
-      "small": 2,
-      "stage": [
-        {
-          "type": "callout",
-          "title": "Gunakan Produknya",
-          "sub": "",
-          "cta": ""
-        }
-      ]
-    },
-    {
-      "start": 9.4,
-      "title": "biar makin *percaya* *diri.*",
+      "start": 3.6,
       "small": 0,
-      "mascot": "center",
+      "title": "Padahal barangnya kan udah *keren* *banget*, lho.",
+      "mascot": "left",
       "pose": "cheer",
       "stage": [
         {
           "type": "stat",
           "value": "100%",
-          "label": "Percaya Diri"
+          "label": "Kualitas Premium"
         }
       ]
     },
     {
-      "start": 10.9,
-      "title": "Terus, tinggal *ceritain* aja *pengalaman* jujur kamu ke orang lain.",
-      "small": 1,
+      "start": 6.3,
+      "small": 0,
+      "title": "Gini deh, coba kamu *pake* dulu",
       "stage": [
         {
           "type": "window",
-          "title": "Chat",
-          "tone": "#1f9d8a",
+          "title": "To-Do",
+          "tone": "#3b6fd8",
           "rows": [
             {
-              "k": "bubble",
-              "from": "user",
-              "text": "Barangnya oke banget!"
-            },
-            {
-              "k": "bubble",
-              "from": "user",
-              "text": "Wajib coba deh."
+              "k": "check",
+              "state": "busy",
+              "text": "Coba produk sendiri"
             }
           ]
         }
       ]
     },
     {
+      "start": 8.6,
+      "small": 0,
+      "title": "produknya sendiri biar makin *percaya* diri.",
+      "mascot": "left",
+      "pose": "point",
+      "stage": [
+        {
+          "type": "stat",
+          "value": "99+",
+          "label": "Tingkat Percaya Diri"
+        }
+      ]
+    },
+    {
+      "start": 10.9,
+      "small": 0,
+      "title": "Terus, tinggal *ceritain* aja",
+      "stage": [
+        {
+          "type": "image",
+          "src": "img/img02.png",
+          "caption": "Berbagi cerita jujur"
+        }
+      ]
+    },
+    {
+      "start": 12.5,
+      "small": 0,
+      "title": "*pengalaman* jujur kamu ke *orang* lain.",
+      "mascot": "left",
+      "pose": "wave",
+      "stage": [
+        {
+          "type": "dialog",
+          "title": "Testimoni",
+          "text": "Produknya beneran bagus!",
+          "sub": "Pengalaman Jujur",
+          "buttons": [
+            "Suka",
+            "Bagikan"
+          ]
+        }
+      ]
+    },
+    {
       "start": 14.8,
-      "title": "Nah, *posting* aja di *status* tanpa beban ya.",
-      "small": 1,
+      "small": 0,
+      "title": "Nah, *posting* aja di status tanpa *beban* ya.",
       "stage": [
         {
           "type": "window",
-          "title": "Status Update",
-          "tone": "#3b6fd8",
+          "title": "Media Sosial",
+          "tone": "#1f9d8a",
           "rows": [
             {
-              "k": "input",
-              "text": "Lagi pake produk ini..."
+              "k": "files",
+              "groups": [
+                "Status",
+                "Cerita"
+              ]
             },
             {
-              "k": "check",
-              "state": "done",
-              "text": "Status Terkirim",
-              "at": "status"
+              "k": "input",
+              "text": "Lagi pake ini nih..."
             }
           ]
         }
@@ -104,37 +130,30 @@
     },
     {
       "start": 17.5,
-      "title": "Pasti rasanya bakal *plong* *banget* deh",
       "small": 0,
+      "title": "Pasti rasanya bakal *plong* *banget* deh",
       "stage": [
         {
           "type": "image",
-          "src": "img/img02.png",
-          "caption": "Tanpa Beban"
+          "src": "img/img03.png",
+          "caption": "Rasanya plong"
         }
       ]
     },
     {
       "start": 19.6,
-      "title": "pas ada yang mulai *nanya* *harga.*",
       "small": 0,
+      "title": "pas ada yang mulai *nanya* *harga*.",
       "stage": [
         {
           "type": "window",
-          "title": "DM Baru",
-          "tone": "#e5252a",
+          "title": "Chat Masuk",
+          "tone": "#3b6fd8",
           "rows": [
             {
               "k": "bubble",
-              "from": "bot",
-              "text": "Min, harganya berapa?"
-            },
-            {
-              "k": "note",
-              "text": "Potensi Closing!",
-              "items": [
-                "Balas"
-              ]
+              "from": "user",
+              "text": "Kak, harganya berapa?"
             }
           ]
         }
@@ -142,33 +161,33 @@
     },
     {
       "start": 21.6,
-      "title": "*Simpen* video ini ya buat *penguat* mental kamu.",
       "small": 0,
-      "mascot": "right",
-      "pose": "wave",
+      "title": "*Simpen* video ini ya buat *penguat* mental kamu.",
+      "mascot": "left",
+      "pose": "cheer",
       "stage": [
         {
           "type": "callout",
-          "title": "Mental Jualan",
-          "sub": "Simpan video ini sekarang",
+          "title": "Siap Jualan?",
+          "sub": "Mulai aja dulu sekarang",
           "cta": ""
         }
       ]
     }
   ],
-  "header": true,
-  "charStyle": "block",
+  "header": false,
+  "charStyle": "stick",
   "transitions": [
     "fade",
     "slide-left",
     "slide-up",
     "zoom"
   ],
-  "transitionsMode": "random",
+  "transitionsMode": "cycle",
   "backgrounds": [
     "cream",
     "sky",
-    "sunset",
+    "dark",
     "navy"
   ],
   "bgMode": "auto",
