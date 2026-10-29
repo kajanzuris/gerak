@@ -51,7 +51,7 @@ const Limb: React.FC<{ x1: number; y1: number; x2: number; y2: number; c: string
 );
 
 // talk (0..1) = kerasnya suara pada frame ini → mulut ikut membuka (lip-sync sederhana)
-const Stick: React.FC<{ pose: Pose; color: string; f: number; type?: string; talk?: number }> = ({ pose, color, f, type, talk }) => {
+export const Stick: React.FC<{ pose: Pose; color: string; f: number; type?: string; talk?: number }> = ({ pose, color, f, type, talk }) => {
   const rad = (d: number) => (d * Math.PI) / 180;
   const talking = talk !== undefined && talk > 0.07;
   const breathe = Math.sin(f / 9) * 3 - (talking ? (talk as number) * 3 : 0);
