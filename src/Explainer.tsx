@@ -38,18 +38,19 @@ const bgStyle = (p: Preset): React.CSSProperties => {
   return { backgroundColor: isGrad ? undefined : p.bg, backgroundImage: imgs.length ? imgs.join(",") : undefined, backgroundSize: sizes.length ? sizes.join(",") : undefined };
 };
 
-// ---- transisi masuk tiap adegan ----
+// ---- transisi antar adegan: adegan lama KELUAR sambil adegan baru MASUK (durasi TD detik) ----
 const TRANS = ["fade", "slide-left", "slide-up", "zoom", "wipe", "none"];
-const transStyle = (kind: string, t: number, base: number): React.CSSProperties => {
-  const k = clamp01((t - base) / 0.4);
-  const e = 1 - Math.pow(1 - k, 3);
+const TD = 0.45;
+const easeIO = (k: number) => (k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2);
+const transPair = (kind: string, k: number): { inn: React.CSSProperties; out: React.CSSProperties } => {
+  const e = easeIO(Math.max(0, Math.min(1, k)));
   switch (kind) {
-    case "fade": return { opacity: e };
-    case "slide-left": return { opacity: e, transform: `translateX(${(1 - e) * 160}px)` };
-    case "slide-up": return { opacity: e, transform: `translateY(${(1 - e) * 140}px)` };
-    case "zoom": return { opacity: e, transform: `scale(${0.88 + 0.12 * e})` };
-    case "wipe": return { clipPath: `inset(0 ${(1 - e) * 100}% 0 0)` };
-    default: return {};
+    case "fade": return { inn: { opacity: e }, out: { opacity: 1 - e } };
+    case "slide-left": return { inn: { transform: `translateX(${(1 - e) * 1080}px)` }, out: { transform: `translateX(${-e * 1080}px)` } };
+    case "slide-up": return { inn: { transform: `translateY(${(1 - e) * 1300}px)` }, out: { transform: `translateY(${-e * 1300}px)` } };
+    case "zoom": return { inn: { opacity: e, transform: `scale(${0.85 + 0.15 * e})` }, out: { opacity: 1 - e, transform: `scale(${1 + 0.15 * e})` } };
+    case "wipe": return { inn: { clipPath: `inset(0 ${(1 - e) * 100}% 0 0)` }, out: {} };
+    default: return { inn: {}, out: {} };
   }
 };
 
@@ -145,7 +146,7 @@ const Appear: React.FC<{ t0: number; children: React.ReactNode; style?: React.CS
   const { fps } = useVideoConfig();
   const s = clamp01(spring({ frame: frame - Math.round(t0 * fps), fps, config: { damping: 15, stiffness: 150 } }));
   return (
-    <div style={{ opacity: clamp01(s * 1.6), transform: `translateY(${(1 - s) * 40}px) scale(${0.94 + 0.06 * s})`, ...style }}>{children}</div>
+    <div style={{ opacity: clamp01(s * 1.6), transform: `translateY(${(1 - s) * 22}px) scale(${0.97 + 0.03 * s})`, ...style }}>{children}</div>
   );
 };
 
@@ -435,7 +436,7 @@ const ImageView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
 
 const StageItem: React.FC<{ b: Item; i: number }> = ({ b, i }) => {
   const cx = React.useContext(Ctx);
-  const t0 = resolveT(b.at, cx, 0.15 + i * 0.35);
+  const t0 = resolveT(b.at, cx, 0.05 + i * 0.35);
   switch (b.type) {
     case "window": return <WindowView b={b} t0={t0} />;
     case "compare": return <CompareView b={b} t0={t0} />;
@@ -529,67 +530,94 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
   const sc = data.scenes[idx];
   const prev = idx > 0 ? data.scenes[idx - 1] : undefined;
   const base = sc.start;
-  const fromSrt = (data.words || []).filter((w) => w.s === idx);
-  const ws = fromSrt.length ? fromSrt : fallbackWords(sc.title, sc.start, idx);
 
   const talk = data.env ? data.env[Math.min(data.env.length - 1, frame)] : undefined;
   const hasMascot = !!sc.mascot;
-  // adegan tanpa blok visual: judul dibuat besar di tengah layar (bukan menggantung kosong di atas)
-  const solo = !(sc.stage && sc.stage.length);
-  // baris kecil hanya untuk kalimat pembuka (maks 3 kata) dan harus menyisakan >= 2 kata untuk baris besar
-  const small = (sc.small ?? 0) <= 3 && (sc.small ?? 0) <= ws.length - 2 ? sc.small ?? 0 : 0;
   const persist = hasMascot && prev?.mascot === sc.mascot;
   const ent = persist ? 1 : clamp01(spring({ frame: frame - Math.round(base * fps), fps, config: { damping: 14 } }));
   const mx = sc.mascot === "left" ? 250 : sc.mascot === "right" ? 830 : 540;
   const flip = sc.mascot === "right";
   const ctaStart = durationInFrames - Math.round(2 * fps);
 
-  // latar: satu saja, atau ganti otomatis tiap N adegan; per adegan bisa dipaksa lewat "bg"
+  // latar per adegan: satu saja, atau ganti otomatis tiap N adegan; "bg" per adegan mengalahkan semuanya
   const names = (data.backgrounds || []).filter((n) => BG_PRESETS[n]);
   const bgNames = names.length ? names : ["cream"];
   const every = Math.max(1, data.bgEvery || 3);
-  const autoName = data.bgMode === "auto" ? bgNames[Math.floor(idx / every) % bgNames.length] : bgNames[0];
-  const preset = BG_PRESETS[sc.bg && BG_PRESETS[sc.bg] ? sc.bg : autoName];
+  const presetFor = (i: number): Preset => {
+    const own = data.scenes[i].bg;
+    if (own && BG_PRESETS[own]) return BG_PRESETS[own];
+    return BG_PRESETS[data.bgMode === "auto" ? bgNames[Math.floor(i / every) % bgNames.length] : bgNames[0]];
+  };
+  const preset = presetFor(idx);
   const ink = data.textColor || preset.ink;
-  const mute = data.textColor || preset.mute;
 
-  // transisi masuk: per adegan ("transition"), atau dari daftar global (berurutan / acak)
+  // jenis transisi masuk per adegan: "transition" di adegan, atau dari daftar global (berurutan / acak)
   const tlist = (data.transitions || []).filter((x) => TRANS.includes(x));
-  const rnd = Math.abs(Math.sin((idx + 1) * 12.9898) * 43758.5453) % 1;
-  const tkind = idx === 0 ? "none" : sc.transition && TRANS.includes(sc.transition) ? sc.transition : tlist.length ? tlist[data.transitionsMode === "random" ? Math.floor(rnd * tlist.length) : idx % tlist.length] : "none";
-  const tstyle = transStyle(tkind, t, base);
+  const tkindFor = (i: number): string => {
+    if (i === 0) return "none";
+    const own = data.scenes[i].transition;
+    if (own && TRANS.includes(own)) return own;
+    if (!tlist.length) return "none";
+    const r = Math.abs(Math.sin((i + 1) * 12.9898) * 43758.5453) % 1;
+    return tlist[data.transitionsMode === "random" ? Math.floor(r * tlist.length) : i % tlist.length];
+  };
+  const tkind = tkindFor(idx);
+  const inTrans = idx > 0 && tkind !== "none" && t - base < TD;
+  const pair = transPair(tkind, (t - base) / TD);
 
   const hasHeader = data.header !== false && !!(data.brand || data.tag);
   const dy = hasHeader ? 0 : -80;
   const cstyle = data.charStyle || "block";
   const poseName = sc.pose || "idle";
 
+  // satu lapisan adegan (judul + blok visual); dipakai dua kali saat transisi (adegan lama + baru)
+  const layer = (i: number, wrap: React.CSSProperties) => {
+    const s = data.scenes[i];
+    const fw = (data.words || []).filter((w) => w.s === i);
+    const wsI = fw.length ? fw : fallbackWords(s.title, s.start, i);
+    const solo = !(s.stage && s.stage.length);
+    const sm = (s.small ?? 0) <= 3 && (s.small ?? 0) <= wsI.length - 2 ? s.small ?? 0 : 0;
+    const hm = !!s.mascot;
+    const p = presetFor(i);
+    return (
+      <Ctx.Provider key={"L" + i} value={{ ws: wsI, base: s.start, t, accent, name, ink: data.textColor || p.ink, mute: data.textColor || p.mute }}>
+        <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, ...wrap }}>
+          <div style={{ position: "absolute", left: 50, right: 50, top: solo ? 420 : 190 + dy, height: solo ? 800 : 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10, textAlign: "center" }}>
+            <Headline ws={wsI} small={sm} solo={solo} />
+          </div>
+          <div style={{ position: "absolute", left: 60, right: 60, top: (hm ? 500 : 520) + dy, bottom: hm ? 520 : 200, display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
+            {(s.stage || []).map((b, bi) => <StageItem key={bi} b={b} i={bi} />)}
+          </div>
+        </div>
+      </Ctx.Provider>
+    );
+  };
+
+  const prevPreset = idx > 0 ? presetFor(idx - 1) : preset;
+
   return (
     <AbsoluteFill style={{ ...bgStyle(preset), fontFamily: FONT, color: ink }}>
       <Audio src={staticFile(name + "/mix.wav")} />
-      <Ctx.Provider value={{ ws, base, t, accent, name, ink, mute }}>
-        {hasHeader ? <Header brand={data.brand || ""} tag={data.tag || ""} /> : null}
-        <div style={{ position: "absolute", left: 50, right: 50, top: solo ? 420 : 190 + dy, height: solo ? 800 : 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10, textAlign: "center", ...tstyle }}>
-          <Headline key={idx} ws={ws} small={small} solo={solo} />
-        </div>
-        <div key={"st" + idx} style={{ position: "absolute", left: 60, right: 60, top: (hasMascot ? 500 : 520) + dy, bottom: hasMascot ? 520 : 200, display: "flex", flexDirection: "column", justifyContent: "center", gap: 28, ...tstyle }}>
-          {(sc.stage || []).map((b, i) => <StageItem key={i} b={b} i={i} />)}
-        </div>
-        {hasMascot && cstyle === "sprite" && data.charImg ? (
-          <SpriteMascot name={name} img={data.charImg} talkImg={data.charTalkImg} x={mx} flip={flip} pose={poseName} f={frame} talk={talk ?? 0} ent={ent} />
-        ) : hasMascot ? (
-          <svg viewBox="0 0 1080 1920" width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0 }}>
-            <g transform={`translate(${mx},${1800 + (1 - ent) * 420}) scale(${flip ? -0.62 : 0.62},0.62)`}>
-              <ellipse cx={0} cy={4} rx={100} ry={14} fill="#000" opacity={0.15} />
-              {cstyle === "stick" ? (
-                <Stick pose={poseName as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
-              ) : (
-                <Block pose={poseName as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
-              )}
-            </g>
-          </svg>
-        ) : null}
-      </Ctx.Provider>
+      {inTrans && prevPreset !== preset ? (
+        <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, ...bgStyle(prevPreset), opacity: 1 - easeIO(clamp01((t - base) / TD)) }} />
+      ) : null}
+      {inTrans ? layer(idx - 1, pair.out) : null}
+      {layer(idx, inTrans ? pair.inn : {})}
+      {hasHeader ? <Header brand={data.brand || ""} tag={data.tag || ""} /> : null}
+      {hasMascot && cstyle === "sprite" && data.charImg ? (
+        <SpriteMascot name={name} img={data.charImg} talkImg={data.charTalkImg} x={mx} flip={flip} pose={poseName} f={frame} talk={talk ?? 0} ent={ent} />
+      ) : hasMascot ? (
+        <svg viewBox="0 0 1080 1920" width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0 }}>
+          <g transform={`translate(${mx},${1800 + (1 - ent) * 420}) scale(${flip ? -0.62 : 0.62},0.62)`}>
+            <ellipse cx={0} cy={4} rx={100} ry={14} fill="#000" opacity={0.15} />
+            {cstyle === "stick" && typeof Stick !== "undefined" ? (
+              <Stick pose={poseName as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
+            ) : (
+              <Block pose={poseName as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
+            )}
+          </g>
+        </svg>
+      ) : null}
       {data.cta && frame >= ctaStart ? (
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-end", paddingBottom: 110 }}>
           <div style={{ padding: "22px 52px", borderRadius: 60, background: accent, color: "#fff", fontWeight: 800, fontSize: 46, fontFamily: FONT }}>{data.cta}</div>
