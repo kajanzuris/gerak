@@ -51,6 +51,8 @@ for i, s in enumerate(sc):
         n = len(title_words(s))
         sm = s.get('small', 0)
         if not isinstance(sm, int) or sm < 0 or sm > n: err.append(f'adegan {i}: small harus bilangan 0..{n} (jumlah kata baris kecil)')
+        if isinstance(sm, int) and (sm > 3 or sm > n - 2) and sm > 0: warn.append(f'adegan {i}: small={sm} terlalu besar (maks 3 dan sisakan >=2 kata untuk judul besar); renderer akan mengabaikannya')
+        if not s.get('stage'): warn.append(f'adegan {i}: stage kosong (hanya teks); pakai sesekali saja')
         if s.get('mascot') is not None and s['mascot'] not in MASCOT: err.append(f"adegan {i}: mascot '{s['mascot']}' harus left/center/right")
         if s.get('pose') is not None and s['pose'] not in POSE: err.append(f"adegan {i}: pose '{s['pose']}' tidak dikenal")
         for j, b in enumerate(s.get('stage') or []):
@@ -93,8 +95,14 @@ for i, s in enumerate(sc):
         elif s['start'] - sc[i - 1]['start'] < 1.0: warn.append(f'adegan {i}: jarak start < 1 dtk (prepare.py akan memaksa min 0.8 dtk)')
 
 if EX:
-    for k in ('brand', 'tag'):
-        if not d.get(k): warn.append(f'explainer: field "{k}" kosong (header memakai default)')
+    if d.get('charStyle') == 'sprite':
+        for k in ('charImg', 'charTalkImg'):
+            if d.get(k) and not os.path.exists(f'{D}/{d[k]}'): err.append(f"file karakter '{d[k]}' belum ada di {D}/ (upload PNG transparan ke folder itu)")
+        if not d.get('charImg'): err.append('charStyle sprite butuh charImg')
+    for n in d.get('backgrounds') or []:
+        if n not in {'cream', 'mint', 'sky', 'sunset', 'paper', 'grid', 'dark', 'navy'}: err.append(f"background '{n}' tidak dikenal")
+    for n in d.get('transitions') or []:
+        if n not in {'fade', 'slide-left', 'slide-up', 'zoom', 'wipe', 'none'}: err.append(f"transisi '{n}' tidak dikenal")
 
 # kesesuaian teks dengan SRT (prepare.py mencocokkan kata persis)
 srt_path = f'{D}/voiceover.srt'
