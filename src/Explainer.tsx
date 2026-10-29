@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Audio, Img, spring, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { loadFont } from "@remotion/google-fonts/Poppins";
-import { Block } from "./VectorStory";
+import { Block, Stick } from "./VectorStory";
 import type { StoryProps } from "./VectorStory";
 
 // Tema "explainer": latar krem berbintik, header merek, judul 2 tingkat (kecil + besar) yang muncul per kata
@@ -12,6 +12,46 @@ const { fontFamily: FONT } = loadFont("normal", { weights: ["400", "600", "800"]
 
 const C = { bg: "#f3efe6", ink: "#16161a", mute: "#6b665c", red: "#e5252a", blue: "#3b6fd8", green: "#1f9d8a", line: "#e2dccf", soft: "#efeadd" };
 const FILE_COL = ["#2aa876", "#3b6fd8", "#7b4fd8", "#e5252a"];
+
+// ---- latar yang bisa dipilih (satu video boleh memakai beberapa, ganti otomatis tiap N adegan) ----
+type Preset = { bg: string; pattern: "dots" | "grid" | "none"; dot: string; ink: string; mute: string };
+const BG_PRESETS: Record<string, Preset> = {
+  cream: { bg: "#f3efe6", pattern: "dots", dot: "#d9d2c1", ink: "#16161a", mute: "#6b665c" },
+  mint: { bg: "#e6f4ee", pattern: "dots", dot: "#c5e3d6", ink: "#10261f", mute: "#4f6b60" },
+  sky: { bg: "#e7f0fb", pattern: "dots", dot: "#c9dcf3", ink: "#10203a", mute: "#53647f" },
+  sunset: { bg: "linear-gradient(180deg,#ffe3d0,#ffc9d8)", pattern: "none", dot: "transparent", ink: "#2a1420", mute: "#7a4d5c" },
+  paper: { bg: "#ffffff", pattern: "none", dot: "transparent", ink: "#16161a", mute: "#6b665c" },
+  grid: { bg: "#f6f4ee", pattern: "grid", dot: "#e3ded0", ink: "#16161a", mute: "#6b665c" },
+  dark: { bg: "#14161d", pattern: "dots", dot: "#262a36", ink: "#ffffff", mute: "#a5acc0" },
+  navy: { bg: "#0f2347", pattern: "dots", dot: "#1d3a6e", ink: "#ffffff", mute: "#b4c3e0" },
+};
+const bgStyle = (p: Preset): React.CSSProperties => {
+  const imgs: string[] = [];
+  const sizes: string[] = [];
+  if (p.pattern === "dots") { imgs.push(`radial-gradient(${p.dot} 2px, transparent 2.5px)`); sizes.push("36px 36px"); }
+  if (p.pattern === "grid") {
+    imgs.push(`linear-gradient(${p.dot} 2px, transparent 2px)`, `linear-gradient(90deg, ${p.dot} 2px, transparent 2px)`);
+    sizes.push("48px 48px", "48px 48px");
+  }
+  const isGrad = p.bg.startsWith("linear");
+  if (isGrad) { imgs.push(p.bg); sizes.push("100% 100%"); }
+  return { backgroundColor: isGrad ? undefined : p.bg, backgroundImage: imgs.length ? imgs.join(",") : undefined, backgroundSize: sizes.length ? sizes.join(",") : undefined };
+};
+
+// ---- transisi masuk tiap adegan ----
+const TRANS = ["fade", "slide-left", "slide-up", "zoom", "wipe", "none"];
+const transStyle = (kind: string, t: number, base: number): React.CSSProperties => {
+  const k = clamp01((t - base) / 0.4);
+  const e = 1 - Math.pow(1 - k, 3);
+  switch (kind) {
+    case "fade": return { opacity: e };
+    case "slide-left": return { opacity: e, transform: `translateX(${(1 - e) * 160}px)` };
+    case "slide-up": return { opacity: e, transform: `translateY(${(1 - e) * 140}px)` };
+    case "zoom": return { opacity: e, transform: `scale(${0.88 + 0.12 * e})` };
+    case "wipe": return { clipPath: `inset(0 ${(1 - e) * 100}% 0 0)` };
+    default: return {};
+  }
+};
 
 type Pose = React.ComponentProps<typeof Block>["pose"];
 type W = { w: string; hl: boolean; a: number; b: number; s: number };
@@ -49,7 +89,7 @@ type Item = {
   n?: number;
   groups?: string[];
 };
-type Scene = { title: string; start: number; small?: number; pose?: string; mascot?: "left" | "center" | "right"; stage?: Item[] };
+type Scene = { title: string; start: number; small?: number; pose?: string; mascot?: "left" | "center" | "right"; stage?: Item[]; transition?: string; bg?: string };
 type Data = {
   durationInFrames: number;
   brand?: string;
@@ -57,6 +97,16 @@ type Data = {
   accent?: string;
   char?: string;
   charColor?: string;
+  charStyle?: "block" | "stick" | "sprite";
+  charImg?: string;
+  charTalkImg?: string;
+  header?: boolean;
+  textColor?: string;
+  transitions?: string[];
+  transitionsMode?: "cycle" | "random";
+  backgrounds?: string[];
+  bgMode?: "single" | "auto";
+  bgEvery?: number;
   cta?: string;
   words?: W[];
   env?: number[];
@@ -66,8 +116,8 @@ type Data = {
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 const norm = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-type Cx = { ws: W[]; base: number; t: number; accent: string; name: string };
-const Ctx = React.createContext<Cx>({ ws: [], base: 0, t: 0, accent: C.red, name: "" });
+type Cx = { ws: W[]; base: number; t: number; accent: string; name: string; ink: string; mute: string };
+const Ctx = React.createContext<Cx>({ ws: [], base: 0, t: 0, accent: C.red, name: "", ink: C.ink, mute: C.mute });
 
 // waktu (detik, absolut) kapan sebuah elemen muncul: kata tertentu di title, detik relatif, atau default
 const resolveT = (at: string | number | undefined, cx: Cx, fallback: number) => {
@@ -86,6 +136,7 @@ const card: React.CSSProperties = {
   boxShadow: "0 10px 30px rgba(40,30,10,.10)",
   border: `2px solid ${C.line}`,
   fontFamily: FONT,
+  color: C.ink,
   overflow: "hidden",
 };
 
@@ -408,22 +459,42 @@ const StageItem: React.FC<{ b: Item; i: number }> = ({ b, i }) => {
 };
 
 const Header: React.FC<{ brand: string; tag: string }> = ({ brand, tag }) => (
-  <div style={{ position: "absolute", left: 30, right: 30, top: 60, height: 78, borderRadius: 39, background: "#fff", boxShadow: "0 4px 18px rgba(0,0,0,.08)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", fontFamily: FONT }}>
-    <div style={{ display: "flex", alignItems: "center", gap: 14, fontWeight: 800, fontSize: 34 }}>
-      <div style={{ width: 44, height: 44, borderRadius: 10, background: C.red, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>{brand.slice(0, 1)}</div>
-      {brand}
-    </div>
+  <div style={{ position: "absolute", left: 30, right: 30, top: 60, height: 78, borderRadius: 39, background: "#fff", color: C.ink, boxShadow: "0 4px 18px rgba(0,0,0,.08)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 28px", fontFamily: FONT }}>
+    {brand ? (
+      <div style={{ display: "flex", alignItems: "center", gap: 14, fontWeight: 800, fontSize: 34 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 10, background: C.red, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28 }}>{brand.slice(0, 1)}</div>
+        {brand}
+      </div>
+    ) : <div />}
     {tag ? <div style={{ background: C.ink, color: "#fff", borderRadius: 30, padding: "8px 22px", fontSize: 26, fontWeight: 600 }}>{tag}</div> : null}
   </div>
 );
 
+const SpriteMascot: React.FC<{ name: string; img: string; talkImg?: string; x: number; flip: boolean; pose: string; f: number; talk: number; ent: number }> = ({ name, img, talkImg, x, flip, pose, f, talk, ent }) => {
+  let dy = Math.sin(f / 9) * 4;
+  let rot = Math.sin(f / 25) * 1.2;
+  if (pose === "cheer") { dy = -Math.abs(Math.sin(f / 5)) * 34; rot += Math.sin(f / 5) * 3; }
+  else if (pose === "walk") { dy = -Math.abs(Math.sin(f / 4)) * 16; rot += Math.sin(f / 4) * 3; }
+  else if (pose === "tremble") rot += Math.sin(f * 2.2) * 2;
+  else if (pose === "sad") { rot += 5; dy += 10; }
+  else if (pose === "think") rot -= 4;
+  const sx = 1 - 0.012 * talk;
+  const sy = 1 + 0.03 * talk;
+  return (
+    <div style={{ position: "absolute", left: x, top: 1800, height: 520, display: "grid", transformOrigin: "50% 100%", transform: `translate(-50%, -100%) translate(0px, ${dy + (1 - ent) * 420}px) rotate(${rot}deg) scale(${(flip ? -1 : 1) * sx}, ${sy})` }}>
+      <Img src={staticFile(`${name}/${img}`)} style={{ gridArea: "1 / 1", height: "100%", width: "auto" }} />
+      {talkImg ? <Img src={staticFile(`${name}/${talkImg}`)} style={{ gridArea: "1 / 1", height: "100%", width: "auto", opacity: talk > 0.25 ? 1 : 0 }} /> : null}
+    </div>
+  );
+};
+
 // judul 2 tingkat: `small` kata pertama = baris kecil, sisanya = baris besar; tiap kata muncul saat diucapkan
-const Headline: React.FC<{ ws: W[]; small: number }> = ({ ws, small }) => {
-  const { accent } = React.useContext(Ctx);
+const Headline: React.FC<{ ws: W[]; small: number; solo?: boolean }> = ({ ws, small, solo }) => {
+  const { accent, ink, mute } = React.useContext(Ctx);
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const big = ws.slice(small);
-  const bigSize = big.length <= 3 ? 124 : big.length <= 5 ? 100 : big.length <= 8 ? 82 : 68;
+  const bigSize = Math.round((big.length <= 3 ? 124 : big.length <= 5 ? 100 : big.length <= 8 ? 82 : 68) * (solo ? 1.25 : 1));
   const line = (arr: W[], size: number, weight: number, base: string) => (
     <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: `0 ${size * 0.28}px`, fontSize: size, fontWeight: weight, lineHeight: 1.15 }}>
       {arr.map((w, i) => {
@@ -436,8 +507,8 @@ const Headline: React.FC<{ ws: W[]; small: number }> = ({ ws, small }) => {
   );
   return (
     <>
-      {small > 0 ? line(ws.slice(0, small), 56, 600, C.mute) : null}
-      {line(big, bigSize, 800, C.ink)}
+      {small > 0 ? line(ws.slice(0, small), solo ? 68 : 56, 600, mute) : null}
+      {line(big, bigSize, 800, ink)}
     </>
   );
 };
@@ -463,28 +534,58 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
 
   const talk = data.env ? data.env[Math.min(data.env.length - 1, frame)] : undefined;
   const hasMascot = !!sc.mascot;
+  // adegan tanpa blok visual: judul dibuat besar di tengah layar (bukan menggantung kosong di atas)
+  const solo = !(sc.stage && sc.stage.length);
+  // baris kecil hanya untuk kalimat pembuka (maks 3 kata) dan harus menyisakan >= 2 kata untuk baris besar
+  const small = (sc.small ?? 0) <= 3 && (sc.small ?? 0) <= ws.length - 2 ? sc.small ?? 0 : 0;
   const persist = hasMascot && prev?.mascot === sc.mascot;
   const ent = persist ? 1 : clamp01(spring({ frame: frame - Math.round(base * fps), fps, config: { damping: 14 } }));
   const mx = sc.mascot === "left" ? 250 : sc.mascot === "right" ? 830 : 540;
   const flip = sc.mascot === "right";
   const ctaStart = durationInFrames - Math.round(2 * fps);
 
+  // latar: satu saja, atau ganti otomatis tiap N adegan; per adegan bisa dipaksa lewat "bg"
+  const names = (data.backgrounds || []).filter((n) => BG_PRESETS[n]);
+  const bgNames = names.length ? names : ["cream"];
+  const every = Math.max(1, data.bgEvery || 3);
+  const autoName = data.bgMode === "auto" ? bgNames[Math.floor(idx / every) % bgNames.length] : bgNames[0];
+  const preset = BG_PRESETS[sc.bg && BG_PRESETS[sc.bg] ? sc.bg : autoName];
+  const ink = data.textColor || preset.ink;
+  const mute = data.textColor || preset.mute;
+
+  // transisi masuk: per adegan ("transition"), atau dari daftar global (berurutan / acak)
+  const tlist = (data.transitions || []).filter((x) => TRANS.includes(x));
+  const rnd = Math.abs(Math.sin((idx + 1) * 12.9898) * 43758.5453) % 1;
+  const tkind = idx === 0 ? "none" : sc.transition && TRANS.includes(sc.transition) ? sc.transition : tlist.length ? tlist[data.transitionsMode === "random" ? Math.floor(rnd * tlist.length) : idx % tlist.length] : "none";
+  const tstyle = transStyle(tkind, t, base);
+
+  const hasHeader = data.header !== false && !!(data.brand || data.tag);
+  const dy = hasHeader ? 0 : -80;
+  const cstyle = data.charStyle || "block";
+  const poseName = sc.pose || "idle";
+
   return (
-    <AbsoluteFill style={{ backgroundColor: C.bg, backgroundImage: "radial-gradient(#d9d2c1 2px, transparent 2.5px)", backgroundSize: "36px 36px", fontFamily: FONT, color: C.ink }}>
+    <AbsoluteFill style={{ ...bgStyle(preset), fontFamily: FONT, color: ink }}>
       <Audio src={staticFile(name + "/mix.wav")} />
-      <Ctx.Provider value={{ ws, base, t, accent, name }}>
-        <Header brand={data.brand || "Brand"} tag={data.tag || ""} />
-        <div style={{ position: "absolute", left: 50, right: 50, top: 190, height: 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10, textAlign: "center" }}>
-          <Headline key={idx} ws={ws} small={sc.small ?? 0} />
+      <Ctx.Provider value={{ ws, base, t, accent, name, ink, mute }}>
+        {hasHeader ? <Header brand={data.brand || ""} tag={data.tag || ""} /> : null}
+        <div style={{ position: "absolute", left: 50, right: 50, top: solo ? 420 : 190 + dy, height: solo ? 800 : 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10, textAlign: "center", ...tstyle }}>
+          <Headline key={idx} ws={ws} small={small} solo={solo} />
         </div>
-        <div key={"st" + idx} style={{ position: "absolute", left: 60, right: 60, top: hasMascot ? 500 : 520, bottom: hasMascot ? 520 : 200, display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
+        <div key={"st" + idx} style={{ position: "absolute", left: 60, right: 60, top: (hasMascot ? 500 : 520) + dy, bottom: hasMascot ? 520 : 200, display: "flex", flexDirection: "column", justifyContent: "center", gap: 28, ...tstyle }}>
           {(sc.stage || []).map((b, i) => <StageItem key={i} b={b} i={i} />)}
         </div>
-        {hasMascot ? (
+        {hasMascot && cstyle === "sprite" && data.charImg ? (
+          <SpriteMascot name={name} img={data.charImg} talkImg={data.charTalkImg} x={mx} flip={flip} pose={poseName} f={frame} talk={talk ?? 0} ent={ent} />
+        ) : hasMascot ? (
           <svg viewBox="0 0 1080 1920" width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0 }}>
             <g transform={`translate(${mx},${1800 + (1 - ent) * 420}) scale(${flip ? -0.62 : 0.62},0.62)`}>
               <ellipse cx={0} cy={4} rx={100} ry={14} fill="#000" opacity={0.15} />
-              <Block pose={(sc.pose || "idle") as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
+              {cstyle === "stick" ? (
+                <Stick pose={poseName as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
+              ) : (
+                <Block pose={poseName as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
+              )}
             </g>
           </svg>
         ) : null}
