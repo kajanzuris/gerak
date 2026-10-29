@@ -10,6 +10,13 @@ Menghasilkan:
   public/<video>/env.json     -> kerasnya suara per frame (lip-sync)
   public/<video>/mix.wav      -> suara + musik (di-duck di bawah suara) + SFX, -14 LUFS
 Butuh ffmpeg, python3, numpy, scipy.
+
+Pengaturan suara (opsional) di scenes.src.json:
+  "audio": {"music": true, "sfx": true, "blockSfx": true}
+    music    = musik latar            sfx = semua efek suara
+    blockSfx = bunyi kecil tiap blok visual muncul (style explainer)
+Suara transisi (style explainer) mengikuti jenis transisi tiap adegan: geser = whoosh, zoom = naik+pop,
+fade = shimmer, wipe = whoosh turun, tanpa transisi = thud.
 """
 import difflib, json, math, os, re, shutil, subprocess, sys
 import numpy as np
@@ -102,10 +109,26 @@ for si, s in enumerate(scenes):                                                 
         hit = next((w for w in words if w['s'] == si and key and norm(w['w']).startswith(key)), None)
         pc['at'] = round(hit['a'], 3) if hit else s['start']
 
+# ---------- 2b. transisi per adegan (satu sumber untuk gambar DAN suara) + pengaturan audio
+AUD = data.get('audio') or {}
+USE_MUSIC, USE_SFX, USE_BLOCKSFX = AUD.get('music', True), AUD.get('sfx', True), AUD.get('blockSfx', True)
+EXPLAINER = data.get('style') == 'explainer'
+T_OK = ('fade', 'slide-left', 'slide-up', 'zoom', 'wipe', 'none')
+T_LIST = [x for x in (data.get('transitions') or []) if x in T_OK]
+def trans_kind(i, s):
+    if i == 0: return 'none'
+    if s.get('transition') in T_OK: return s['transition']
+    if not T_LIST: return 'none'
+    r = abs(math.sin((i + 1) * 12.9898) * 43758.5453) % 1
+    return T_LIST[int(r * len(T_LIST)) if data.get('transitionsMode') == 'random' else i % len(T_LIST)]
+if EXPLAINER:                                                                       # renderer membaca "transition" per adegan ini
+    for i, s in enumerate(scenes): s['transition'] = trans_kind(i, s)
+
 DUR = math.ceil((max(VO, SPEECH_END) + TAIL) * FPS) / FPS
 data['durationInFrames'] = int(round(DUR * FPS)); data['words'] = words; data['music'] = False
 json.dump(data, open(f'{D}/scenes.json', 'w', encoding='utf-8'), indent=1, ensure_ascii=False)
 print('durasi', DUR, 'dtk =', data['durationInFrames'], 'frame;', len(scenes), 'adegan:', [s['start'] for s in scenes])
+if EXPLAINER: print('transisi:', [s['transition'] for s in scenes])
 
 # ---------- 3. lip-sync: kerasnya suara per frame
 env = [0.0] * data['durationInFrames']
@@ -122,9 +145,26 @@ json.dump(env, open(f'{D}/env.json', 'w'))
 
 # ---------- 4. musik bed + SFX terikat adegan (cues untuk tools/make_audio.py)
 seq = lambda s: max(0.0, s['start'] - (XF / FPS if s is not scenes[0] else 0))       # awal Sequence adegan
+# bunyi tiap jenis transisi (style explainer)
+TSFX = {
+    'slide-left': dict(type='whoosh', d=.45, f0=300, f1=5200, pan=-.3, gain=.5),
+    'slide-up':   dict(type='whoosh', d=.45, f0=700, f1=7000, pan=0, gain=.5),
+    'wipe':       dict(type='whoosh', d=.4, f0=4500, f1=500, pan=.3, gain=.45),
+    'zoom':       dict(type='rise', d=.45, f0=250, f1=1100, gain=1.0),
+    'fade':       dict(type='shimmer', d=.6, gain=1.0),
+}
 sfx = [dict(t=0.0, type='pop', gain=.5)]
-for s in scenes[1:]:
-    sfx += [dict(t=round(max(0, s['start'] - .32), 3), type='whoosh', d=.5, gain=.5), dict(t=s['start'], type='thud', gain=.3)]
+for i, s in enumerate(scenes):
+    if i == 0: continue
+    if not EXPLAINER:                                                                # style lama: perilaku semula
+        sfx += [dict(t=round(max(0, s['start'] - .32), 3), type='whoosh', d=.5, gain=.5), dict(t=s['start'], type='thud', gain=.3)]
+        continue
+    k = trans_kind(i, s)
+    if k in TSFX:
+        sfx.append(dict(t=round(max(0, s['start'] - .05), 3), **TSFX[k]))
+        if k in ('zoom', 'wipe'): sfx.append(dict(t=round(s['start'] + .2, 3), type='pop', gain=.3))
+    else:                                                                            # tanpa transisi = potong langsung
+        sfx.append(dict(t=s['start'], type='thud', gain=.3))
 for s in scenes:
     c = s.get('card'); q = seq(s)
     if c and c.get('type') == 'list':
@@ -133,7 +173,18 @@ for s in scenes:
         sfx += [dict(t=round(q + 4 / FPS, 3), type='ticks', d=1.2, step=.08, gain=.5),
                 dict(t=round(q + 40 / FPS, 3), type='thud', gain=.7), dict(t=round(q + 40 / FPS, 3), type='bell', f=1318, gain=.4)]
     if s.get('prop') == 'confetti': sfx += [dict(t=round(s['start'] + .1, 3), type='impact', gain=.4), dict(t=round(s['start'] + .2, 3), type='sparkle')]
+if EXPLAINER and USE_BLOCKSFX:                                                       # bunyi kecil saat tiap blok visual muncul
+    for si, s in enumerate(scenes):
+        ws_s = [w for w in words if w['s'] == si]
+        for bi, b in enumerate(s.get('stage') or []):
+            at = b.get('at'); t0 = s['start'] + .05 + bi * .35                       # sama dengan default di Explainer.tsx
+            if isinstance(at, (int, float)): t0 = s['start'] + at
+            elif isinstance(at, str):
+                kk = norm(at); h = next((w for w in ws_s if kk and norm(w['w']).startswith(kk)), None)
+                if h: t0 = h['a']
+            sfx.append(dict(t=round(t0, 3), type='plink' if b.get('type') in ('stat', 'callout') else 'pop', gain=.35))
 if data.get('cta'): sfx += [dict(t=round(DUR - 2.0, 3), type='sparkle'), dict(t=round(DUR - 2.0, 3), type='pop', gain=.6)]
+if not USE_SFX: sfx = []
 music = dict(profile='bed', bpm=100, bars=['C', 'G', 'Am', 'F'], breaks=[], arp_from=2.0, hat_from=4.0, clap_from=999, final=round(max(DUR - 1.6, 1.0), 3))
 json.dump(dict(dur=DUR, fps=FPS, sfx=sfx, music=music), open('tools/cues.json', 'w'), indent=1)
 r = run([sys.executable, 'tools/make_audio.py', '--bed']); print(r.stdout.strip() or r.stderr[-400:])
@@ -143,14 +194,14 @@ if os.path.exists(mp3):
     subprocess.run([FF, '-y', '-loglevel', 'error', '-i', mp3, '-vn', '-ar', '44100', '-ac', '2', '-af', 'highpass=f=70,loudnorm=I=-16:TP=-1.5:LRA=7', 'tmp/vo.wav'], check=True)
 else:
     subprocess.run([FF, '-y', '-loglevel', 'error', '-f', 'lavfi', '-i', f'anullsrc=r=44100:cl=stereo', '-t', str(DUR), 'tmp/vo.wav'], check=True)
-fg = (f'[0:a]apad=whole_dur={DUR},asplit=2[vo][sc];[1:a]volume=0.65[bed];[bed][sc]sidechaincompress=threshold=0.03:ratio=8:attack=20:release=500:makeup=1[d0];'
+fg = (f'[0:a]apad=whole_dur={DUR},asplit=2[vo][sc];[1:a]volume={0.65 if USE_MUSIC else 0.0}[bed];[bed][sc]sidechaincompress=threshold=0.03:ratio=8:attack=20:release=500:makeup=1[d0];'
       f'[d0]asplit=2[duck][dchk];[2:a]volume=0.5[fx];[vo][duck][fx]amix=inputs=3:duration=longest[o]')
 subprocess.run([FF, '-y', '-loglevel', 'error', '-i', 'tmp/vo.wav', '-i', 'tmp/bed.wav', '-i', 'tmp/sfx.wav', '-filter_complex', fg,
                 '-map', '[o]', '-t', str(DUR), '-ar', '44100', 'tmp/raw_mix.wav', '-map', '[dchk]', '-t', str(DUR), 'tmp/duck_only.wav'], check=True)
 subprocess.run([FF, '-y', '-loglevel', 'error', '-i', 'tmp/raw_mix.wav', '-af', 'loudnorm=I=-14:TP=-2.5:LRA=11', '-ar', '44100', f'{D}/mix.wav'], check=True)
 
 # ---------- 6. cek angka (kita tidak "mendengar", jadi ukur)
-if os.path.exists(mp3):
+if os.path.exists(mp3) and USE_MUSIC:
     from scipy.io import wavfile
     def load(p):
         sr, a = wavfile.read(p); a = a.astype(np.float32) / 32768
