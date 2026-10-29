@@ -1,7 +1,7 @@
 {
   "style": "explainer",
   "brand": "NamaBrandSaya",
-  "tag": "Tips Jualan",
+  "tag": "Mental Jualan",
   "accent": "#e5252a",
   "char": "boss",
   "charColor": "#222222",
@@ -9,118 +9,168 @@
   "scenes": [
     {
       "start": 0,
-      "title": "Eh, *jujur* ya,",
-      "small": 1,
+      "title": "Eh, kenapa sih kamu masih *ngerasa* *takut* buat jualan terus?",
+      "small": 3,
       "mascot": "center",
-      "pose": "wave",
-      "stage": []
-    },
-    {
-      "start": 0.9,
-      "title": "*aku* berharap banget ada yang",
-      "small": 1,
-      "mascot": "right",
       "pose": "think",
       "stage": []
     },
     {
-      "start": 2.4,
-      "title": "*kasih* tahu aku soal *ini*",
+      "start": 3.6,
+      "title": "Padahal barangnya kan udah *keren* banget, lho.",
+      "small": 0,
+      "stage": [
+        {
+          "type": "image",
+          "src": "img/img01.png",
+          "caption": "Produk Premium"
+        }
+      ]
+    },
+    {
+      "start": 6.3,
+      "title": "Gini deh, coba kamu *pake* dulu *produknya* sendiri",
       "small": 2,
-      "stage": []
-    },
-    {
-      "start": 4,
-      "title": "dari dulu tentang gimana *caranya*",
-      "small": 4,
-      "stage": []
-    },
-    {
-      "start": 5.9,
-      "title": "*berani* jualan. Nah, mending kamu",
-      "small": 2,
-      "stage": []
-    },
-    {
-      "start": 7.9,
-      "title": "coba *tawarin* barangnya ke *teman*",
-      "small": 2,
-      "mascot": "left",
-      "pose": "point",
-      "stage": []
-    },
-    {
-      "start": 9.7,
-      "title": "dekat dulu deh. Terus, *fokus*",
-      "small": 3,
-      "mascot": "right",
-      "pose": "idle",
-      "stage": []
-    },
-    {
-      "start": 11.6,
-      "title": "saja buat bantu *nyelesaiin* masalah",
-      "small": 3,
-      "stage": []
-    },
-    {
-      "start": 13.7,
-      "title": "mereka pakai *produkmu* itu. Habis",
-      "small": 2,
-      "mascot": "center",
-      "pose": "cheer",
-      "stage": []
-    },
-    {
-      "start": 15.7,
-      "title": "itu, nggak usah dengerin *komentar*",
-      "small": 5,
-      "stage": []
-    },
-    {
-      "start": 17.6,
-      "title": "*negatif* orang lain ya. Nanti",
-      "small": 4,
-      "mascot": "left",
-      "pose": "wave",
-      "stage": []
-    },
-    {
-      "start": 19.5,
-      "title": "kamu pasti bakal *ketagihan* kok",
-      "small": 4,
-      "stage": []
-    },
-    {
-      "start": 21.3,
-      "title": "pas sudah dapat *transferan*",
-      "small": 3,
-      "mascot": "right",
-      "pose": "cheer",
-      "stage": []
-    },
-    {
-      "start": 22.8,
-      "title": "pertama. Simpan video ini ya biar",
-      "small": 1,
-      "mascot": "left",
-      "pose": "point",
-      "stage": []
-    },
-    {
-      "start": 25.1,
-      "title": "kamu nggak *ragu-ragu* lagi.",
-      "small": 2,
-      "mascot": "center",
-      "pose": "idle",
       "stage": [
         {
           "type": "callout",
-          "title": "kamu nggak ragu-ragu lagi.",
-          "sub": "NamaBrandSaya",
-          "cta": "Link-nya di bio"
+          "title": "Gunakan Produknya",
+          "sub": "",
+          "cta": ""
+        }
+      ]
+    },
+    {
+      "start": 9.4,
+      "title": "biar makin *percaya* *diri.*",
+      "small": 0,
+      "mascot": "center",
+      "pose": "cheer",
+      "stage": [
+        {
+          "type": "stat",
+          "value": "100%",
+          "label": "Percaya Diri"
+        }
+      ]
+    },
+    {
+      "start": 10.9,
+      "title": "Terus, tinggal *ceritain* aja *pengalaman* jujur kamu ke orang lain.",
+      "small": 1,
+      "stage": [
+        {
+          "type": "window",
+          "title": "Chat",
+          "tone": "#1f9d8a",
+          "rows": [
+            {
+              "k": "bubble",
+              "from": "user",
+              "text": "Barangnya oke banget!"
+            },
+            {
+              "k": "bubble",
+              "from": "user",
+              "text": "Wajib coba deh."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "start": 14.8,
+      "title": "Nah, *posting* aja di *status* tanpa beban ya.",
+      "small": 1,
+      "stage": [
+        {
+          "type": "window",
+          "title": "Status Update",
+          "tone": "#3b6fd8",
+          "rows": [
+            {
+              "k": "input",
+              "text": "Lagi pake produk ini..."
+            },
+            {
+              "k": "check",
+              "state": "done",
+              "text": "Status Terkirim",
+              "at": "status"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "start": 17.5,
+      "title": "Pasti rasanya bakal *plong* *banget* deh",
+      "small": 0,
+      "stage": [
+        {
+          "type": "image",
+          "src": "img/img02.png",
+          "caption": "Tanpa Beban"
+        }
+      ]
+    },
+    {
+      "start": 19.6,
+      "title": "pas ada yang mulai *nanya* *harga.*",
+      "small": 0,
+      "stage": [
+        {
+          "type": "window",
+          "title": "DM Baru",
+          "tone": "#e5252a",
+          "rows": [
+            {
+              "k": "bubble",
+              "from": "bot",
+              "text": "Min, harganya berapa?"
+            },
+            {
+              "k": "note",
+              "text": "Potensi Closing!",
+              "items": [
+                "Balas"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "start": 21.6,
+      "title": "*Simpen* video ini ya buat *penguat* mental kamu.",
+      "small": 0,
+      "mascot": "right",
+      "pose": "wave",
+      "stage": [
+        {
+          "type": "callout",
+          "title": "Mental Jualan",
+          "sub": "Simpan video ini sekarang",
+          "cta": ""
         }
       ]
     }
-  ]
+  ],
+  "header": true,
+  "charStyle": "block",
+  "transitions": [
+    "fade",
+    "slide-left",
+    "slide-up",
+    "zoom"
+  ],
+  "transitionsMode": "random",
+  "backgrounds": [
+    "cream",
+    "sky",
+    "sunset",
+    "navy"
+  ],
+  "bgMode": "auto",
+  "bgEvery": 2
 }
