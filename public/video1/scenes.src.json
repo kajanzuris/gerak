@@ -1,182 +1,96 @@
 {
   "style": "explainer",
-  "tag": "Mental Jualan",
-  "accent": "#07e9c3",
-  "char": "robot",
+  "tag": "dasar · AI agent",
+  "accent": "#1f9d8a",
+  "char": "boss",
   "charColor": "#222222",
   "scenes": [
     {
       "start": 0,
+      "title": "Ada satu hal yang *jarang* *diomongin* orang",
       "small": 3,
-      "title": "Eh, kenapa sih kamu masih *ngerasa*",
-      "mascot": "left",
-      "pose": "think",
+      "mascot": "center",
+      "pose": "wave",
       "stage": []
     },
     {
-      "start": 2.2,
+      "start": 3.3,
+      "title": "soal *mulai* *jualan.*",
       "small": 0,
-      "title": "*takut* buat *jualan* terus?",
-      "stage": [
-        {
-          "type": "image",
-          "src": "img/img01.png",
-          "caption": "Rasa takut jualan"
-        }
-      ]
+      "stage": []
     },
     {
-      "start": 3.6,
-      "small": 0,
-      "title": "Padahal barangnya kan udah *keren* *banget*, lho.",
-      "mascot": "left",
-      "pose": "cheer",
-      "stage": [
-        {
-          "type": "stat",
-          "value": "100%",
-          "label": "Kualitas Premium"
-        }
-      ]
+      "start": 4.1,
+      "title": "Ini bukan cuma *soal* *untung,*",
+      "small": 3,
+      "stage": [],
+      "mascot": "center",
+      "pose": "think"
     },
     {
-      "start": 6.3,
-      "small": 0,
-      "title": "Gini deh, coba kamu *pake* dulu",
-      "stage": [
-        {
-          "type": "window",
-          "title": "To-Do",
-          "tone": "#3b6fd8",
-          "rows": [
-            {
-              "k": "check",
-              "state": "busy",
-              "text": "Coba produk sendiri"
-            }
-          ]
-        }
-      ]
+      "start": 5.9,
+      "title": "tapi soal gimana rasanya *tangan* *gemetaran*",
+      "small": 2,
+      "stage": []
     },
     {
-      "start": 8.6,
-      "small": 0,
-      "title": "produknya sendiri biar makin *percaya* diri.",
-      "mascot": "left",
-      "pose": "point",
-      "stage": [
-        {
-          "type": "stat",
-          "value": "99+",
-          "label": "Tingkat Percaya Diri"
-        }
-      ]
+      "start": 8.4,
+      "title": "pas mau *unggah* *foto* produk yang pertama.",
+      "small": 2,
+      "stage": []
     },
     {
-      "start": 10.9,
-      "small": 0,
-      "title": "Terus, tinggal *ceritain* aja",
-      "stage": [
-        {
-          "type": "image",
-          "src": "img/img02.png",
-          "caption": "Berbagi cerita jujur"
-        }
-      ]
+      "start": 11.3,
+      "title": "Kayak *tunas* yang lagi berusaha nembus *tanah* yang keras,",
+      "small": 1,
+      "stage": []
     },
     {
-      "start": 12.5,
-      "small": 0,
-      "title": "*pengalaman* jujur kamu ke *orang* lain.",
-      "mascot": "left",
-      "pose": "wave",
-      "stage": [
-        {
-          "type": "dialog",
-          "title": "Testimoni",
-          "text": "Produknya beneran bagus!",
-          "sub": "Pengalaman Jujur",
-          "buttons": [
-            "Suka",
-            "Bagikan"
-          ]
-        }
-      ]
+      "start": 15.1,
+      "title": "rasa *takut* yang kamu *rasain*",
+      "small": 2,
+      "stage": [],
+      "mascot": "center",
+      "pose": "idle"
     },
     {
-      "start": 14.8,
-      "small": 0,
-      "title": "Nah, *posting* aja di status tanpa *beban* ya.",
-      "stage": [
-        {
-          "type": "window",
-          "title": "Media Sosial",
-          "tone": "#1f9d8a",
-          "rows": [
-            {
-              "k": "files",
-              "groups": [
-                "Status",
-                "Cerita"
-              ]
-            },
-            {
-              "k": "input",
-              "text": "Lagi pake ini nih..."
-            }
-          ]
-        }
-      ]
+      "start": 17.6,
+      "title": "itu tandanya kamu lagi *bertumbuh,* lho.",
+      "small": 2,
+      "stage": []
     },
     {
-      "start": 17.5,
-      "small": 0,
-      "title": "Pasti rasanya bakal *plong* *banget* deh",
-      "stage": [
-        {
-          "type": "image",
-          "src": "img/img03.png",
-          "caption": "Rasanya plong"
-        }
-      ]
+      "start": 19.7,
+      "title": "Coba deh *bagikan* pesan ini ke *teman* kamu",
+      "small": 2,
+      "stage": []
     },
     {
-      "start": 19.6,
-      "small": 0,
-      "title": "pas ada yang mulai *nanya* *harga*.",
-      "stage": [
-        {
-          "type": "window",
-          "title": "Chat Masuk",
-          "tone": "#3b6fd8",
-          "rows": [
-            {
-              "k": "bubble",
-              "from": "user",
-              "text": "Kak, harganya berapa?"
-            }
-          ]
-        }
-      ]
+      "start": 22.6,
+      "title": "yang sekiranya lagi *butuh* *keberanian.*",
+      "small": 2,
+      "stage": [],
+      "mascot": "center",
+      "pose": "point"
     },
     {
-      "start": 21.6,
-      "small": 0,
-      "title": "*Simpen* video ini ya buat *penguat* mental kamu.",
-      "mascot": "left",
-      "pose": "cheer",
+      "start": 24.5,
+      "title": "Terus, *ceritain* juga dong satu *ketakutan* kamu di bawah ya.",
+      "small": 2,
       "stage": [
         {
           "type": "callout",
-          "title": "Siap Jualan?",
-          "sub": "Mulai aja dulu sekarang",
+          "title": "Terus, ceritain juga dong",
+          "sub": "",
           "cta": ""
         }
-      ]
+      ],
+      "mascot": "center",
+      "pose": "wave"
     }
   ],
   "header": false,
-  "charStyle": "stick",
+  "charStyle": "block",
   "transitions": [
     "fade",
     "slide-left",
@@ -186,10 +100,17 @@
   "transitionsMode": "cycle",
   "backgrounds": [
     "cream",
-    "sky",
-    "dark",
+    "mint",
+    "sunset",
+    "paper",
+    "grid",
     "navy"
   ],
-  "bgMode": "auto",
-  "bgEvery": 2
+  "bgMode": "single",
+  "bgEvery": 1,
+  "audio": {
+    "music": true,
+    "sfx": true,
+    "blockSfx": true
+  }
 }
