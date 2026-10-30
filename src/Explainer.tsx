@@ -13,6 +13,43 @@ const { fontFamily: FONT } = loadFont("normal", { weights: ["400", "600", "800"]
 const C = { bg: "#f3efe6", ink: "#16161a", mute: "#6b665c", red: "#e5252a", blue: "#3b6fd8", green: "#1f9d8a", line: "#e2dccf", soft: "#efeadd" };
 const FILE_COL = ["#2aa876", "#3b6fd8", "#7b4fd8", "#e5252a"];
 
+// Warna kartu lewat CSS variable supaya satu komponen bisa tampil di tema "clean" (terang) maupun "hud" (kaca gelap).
+// Nilai di belakang koma = tampilan tema clean.
+const V = {
+  cardBg: "var(--card-bg,#fff)",
+  cardLine: "var(--card-line,#e2dccf)",
+  cardInk: "var(--card-ink,#16161a)",
+  cardShadow: "var(--card-shadow,0 10px 30px rgba(40,30,10,.10))",
+  radius: "var(--card-radius,32px)",
+  soft: "var(--soft,#efeadd)",
+  row: "var(--row,#f4f1e8)",
+  row2: "var(--row2,#f7f3ea)",
+  note: "var(--note-bg,#fff3cf)",
+  noteLine: "var(--note-line,#f1d98a)",
+  ghost: "var(--btn-ghost,#e9e4d6)",
+  mute: "var(--mute,#6b665c)",
+  bar: "var(--bar,#cfc8b8)",
+  callout: "var(--callout-bg,linear-gradient(180deg,#fff,#ffe9d6))",
+};
+const HUD_CYAN = "#22d3ee";
+const HUD_ORANGE = "#ff7a1a";
+const HUD_VARS = {
+  "--card-bg": "rgba(8,22,50,.72)",
+  "--card-line": "rgba(34,211,238,.55)",
+  "--card-ink": "#e8f6ff",
+  "--card-shadow": "0 0 28px rgba(34,211,238,.25), inset 0 0 22px rgba(34,211,238,.08)",
+  "--card-radius": "20px",
+  "--soft": "rgba(34,211,238,.16)",
+  "--row": "rgba(34,211,238,.10)",
+  "--row2": "rgba(34,211,238,.10)",
+  "--note-bg": "rgba(255,122,26,.16)",
+  "--note-line": "rgba(255,122,26,.6)",
+  "--btn-ghost": "rgba(255,255,255,.14)",
+  "--mute": "#9fb3d1",
+  "--bar": "rgba(34,211,238,.45)",
+  "--callout-bg": "linear-gradient(180deg,rgba(8,22,50,.88),rgba(60,28,8,.78))",
+} as React.CSSProperties;
+
 // ---- latar yang bisa dipilih (satu video boleh memakai beberapa, ganti otomatis tiap N adegan) ----
 type Preset = { bg: string; pattern: "dots" | "grid" | "none"; dot: string; ink: string; mute: string };
 const BG_PRESETS: Record<string, Preset> = {
@@ -69,10 +106,14 @@ type Row = {
 type Col = { title: string; tone?: string; items: string[] };
 type TreeCol = { head: string; mid?: string; tag?: string; low?: string };
 type Item = {
-  type: "window" | "compare" | "tree" | "files" | "dialog" | "callout" | "list" | "stat" | "image";
+  type: "window" | "compare" | "tree" | "files" | "dialog" | "callout" | "list" | "stat" | "image" | "meter" | "bars";
+  pct?: number;
+  bars?: { label: string; value: number }[];
+  hi?: number;
   src?: string;
   caption?: string;
   h?: number;
+  frame?: boolean;
   at?: string | number;
   title?: string;
   tone?: string;
@@ -90,9 +131,10 @@ type Item = {
   n?: number;
   groups?: string[];
 };
-type Scene = { title: string; start: number; small?: number; pose?: string; mascot?: "left" | "center" | "right"; stage?: Item[]; transition?: string; bg?: string };
+type Scene = { title: string; start: number; small?: number; pose?: string; mascot?: "left" | "center" | "right"; stage?: Item[]; transition?: string; bg?: string; label?: string };
 type Data = {
   durationInFrames: number;
+  theme?: "clean" | "hud";
   brand?: string;
   tag?: string;
   accent?: string;
@@ -117,8 +159,8 @@ type Data = {
 const clamp01 = (x: number) => Math.max(0, Math.min(1, x));
 const norm = (w: string) => w.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-type Cx = { ws: W[]; base: number; t: number; accent: string; name: string; ink: string; mute: string };
-const Ctx = React.createContext<Cx>({ ws: [], base: 0, t: 0, accent: C.red, name: "", ink: C.ink, mute: C.mute });
+type Cx = { ws: W[]; base: number; t: number; accent: string; name: string; ink: string; mute: string; theme: "clean" | "hud" };
+const Ctx = React.createContext<Cx>({ ws: [], base: 0, t: 0, accent: C.red, name: "", ink: C.ink, mute: C.mute, theme: "clean" });
 
 // waktu (detik, absolut) kapan sebuah elemen muncul: kata tertentu di title, detik relatif, atau default
 const resolveT = (at: string | number | undefined, cx: Cx, fallback: number) => {
@@ -132,12 +174,12 @@ const resolveT = (at: string | number | undefined, cx: Cx, fallback: number) => 
 };
 
 const card: React.CSSProperties = {
-  background: "#fff",
-  borderRadius: 32,
-  boxShadow: "0 10px 30px rgba(40,30,10,.10)",
-  border: `2px solid ${C.line}`,
+  background: V.cardBg,
+  borderRadius: V.radius,
+  boxShadow: V.cardShadow,
+  border: `2px solid ${V.cardLine}`,
   fontFamily: FONT,
-  color: C.ink,
+  color: V.cardInk,
   overflow: "hidden",
 };
 
@@ -181,7 +223,7 @@ const FileIcon: React.FC<{ i: number; s?: number }> = ({ i, s = 44 }) => (
 const Btn: React.FC<{ label: string; main?: boolean }> = ({ label, main }) => {
   const { accent } = React.useContext(Ctx);
   return (
-    <div style={{ padding: "14px 32px", borderRadius: 22, fontSize: 28, fontWeight: 800, background: main ? accent : "#e9e4d6", color: main ? "#fff" : C.mute }}>{label}</div>
+    <div style={{ padding: "14px 32px", borderRadius: 22, fontSize: 28, fontWeight: 800, background: main ? accent : V.ghost, color: main ? "#fff" : V.mute }}>{label}</div>
   );
 };
 
@@ -222,19 +264,19 @@ const RowView: React.FC<{ r: Row; t0: number }> = ({ r, t0 }) => {
         {!user && (
           <div style={{ width: 46, height: 46, borderRadius: 23, background: "#dfe8ff", color: C.blue, fontWeight: 800, fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>AI</div>
         )}
-        <div style={{ maxWidth: "78%", padding: "16px 22px", borderRadius: 24, fontSize: 28, fontWeight: 600, lineHeight: 1.3, background: user ? accent : C.soft, color: user ? "#fff" : C.ink }}>{r.text}</div>
+        <div style={{ maxWidth: "78%", padding: "16px 22px", borderRadius: 24, fontSize: 28, fontWeight: 600, lineHeight: 1.3, background: user ? accent : V.soft, color: user ? "#fff" : V.cardInk }}>{r.text}</div>
       </div>
     );
   } else if (r.k === "check") {
     const st = r.state || "done";
     body = (
-      <div style={{ display: "flex", alignItems: "center", gap: 16, background: "#f4f1e8", borderRadius: 18, padding: "12px 18px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, background: V.row, borderRadius: 18, padding: "12px 18px" }}>
         {st === "done" ? (
           <div style={{ width: 34, height: 34, borderRadius: 17, background: C.green, display: "flex", alignItems: "center", justifyContent: "center" }}><Check /></div>
         ) : st === "busy" ? (
-          <div style={{ width: 34, height: 34, borderRadius: 17, border: `4px solid ${C.line}`, borderTopColor: C.green, boxSizing: "border-box", transform: `rotate(${t * 540}deg)` }} />
+          <div style={{ width: 34, height: 34, borderRadius: 17, border: `4px solid ${V.cardLine}`, borderTopColor: C.green, boxSizing: "border-box", transform: `rotate(${t * 540}deg)` }} />
         ) : (
-          <div style={{ width: 34, height: 34, borderRadius: 17, border: `4px solid ${C.line}`, boxSizing: "border-box" }} />
+          <div style={{ width: 34, height: 34, borderRadius: 17, border: `4px solid ${V.cardLine}`, boxSizing: "border-box" }} />
         )}
         <div style={{ fontSize: 28, fontWeight: 600 }}>{r.text}</div>
       </div>
@@ -244,14 +286,14 @@ const RowView: React.FC<{ r: Row; t0: number }> = ({ r, t0 }) => {
     const n = Math.floor(Math.max(0, t - t0 - 0.25) * 18);
     const cursor = n < full.length || Math.floor(t * 2) % 2 === 0 ? "|" : "";
     body = (
-      <div style={{ display: "flex", alignItems: "center", gap: 12, border: `3px solid ${C.green}`, borderRadius: 40, padding: "10px 12px 10px 26px", background: "#fff" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, border: `3px solid ${C.green}`, borderRadius: 40, padding: "10px 12px 10px 26px", background: V.cardBg }}>
         <div style={{ flex: 1, fontSize: 28, fontWeight: 600, minHeight: 40, display: "flex", alignItems: "center" }}>{full.slice(0, n)}{cursor}</div>
         <div style={{ width: 54, height: 54, borderRadius: 27, background: accent, display: "flex", alignItems: "center", justifyContent: "center" }}><Arrow /></div>
       </div>
     );
   } else if (r.k === "note") {
     body = (
-      <div style={{ background: "#fff3cf", border: "2px solid #f1d98a", borderRadius: 22, padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+      <div style={{ background: V.note, border: `2px solid ${V.noteLine}`, borderRadius: 22, padding: "18px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <div style={{ fontSize: 28, fontWeight: 600, flex: 1 }}>{r.text}</div>
         {(r.items || []).map((it, i, a) => <Btn key={i} label={it} main={i === a.length - 1} />)}
       </div>
@@ -318,7 +360,7 @@ const TreeView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => (
         </Appear>
         {c.mid ? (
           <>
-            <div style={{ width: 3, height: 26, background: C.line }} />
+            <div style={{ width: 3, height: 26, background: V.cardLine }} />
             <Appear t0={t0 + 0.5 + i * 0.15} style={{ width: "100%" }}>
               <div style={{ ...card, borderRadius: 18, border: `3px solid ${C.blue}`, padding: "14px 0", textAlign: "center", fontWeight: 800, fontSize: 28 }}>
                 {c.mid}
@@ -329,7 +371,7 @@ const TreeView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => (
         ) : null}
         {c.low ? (
           <>
-            <div style={{ width: 3, height: 26, background: C.line }} />
+            <div style={{ width: 3, height: 26, background: V.cardLine }} />
             <Appear t0={t0 + 1.0 + i * 0.15} style={{ width: "100%" }}>
               <div style={{ ...card, borderRadius: 18, padding: "14px 0", textAlign: "center", fontWeight: 600, fontSize: 26 }}>{c.low}</div>
             </Appear>
@@ -343,7 +385,7 @@ const TreeView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => (
 const DialogView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => (
   <Appear t0={t0}>
     <div style={card}>
-      <div style={{ background: "#fff3cf", padding: "16px 24px", display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ background: V.note, padding: "16px 24px", display: "flex", alignItems: "center", gap: 14 }}>
         <div style={{ width: 40, height: 40, borderRadius: 20, background: "#f5a623", color: "#fff", fontWeight: 800, fontSize: 26, display: "flex", alignItems: "center", justifyContent: "center" }}>!</div>
         <div style={{ fontWeight: 800, fontSize: 28 }}>{b.title}</div>
       </div>
@@ -354,7 +396,7 @@ const DialogView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => (
           <svg width={40} height={24} viewBox="0 0 40 24"><path d="M2 12h32M26 4l8 8-8 8" stroke={C.mute} strokeWidth={3.5} fill="none" strokeLinecap="round" strokeLinejoin="round" /></svg>
           <Trash />
         </div>
-        {b.sub ? <div style={{ fontSize: 22, color: C.mute }}>{b.sub}</div> : null}
+        {b.sub ? <div style={{ fontSize: 22, color: V.mute }}>{b.sub}</div> : null}
         <div style={{ display: "flex", gap: 18, justifyContent: "center", marginTop: 26 }}>
           {(b.buttons || []).map((x, i, a) => <Btn key={i} label={x} main={i === a.length - 1} />)}
         </div>
@@ -367,9 +409,9 @@ const CalloutView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
   const { accent } = React.useContext(Ctx);
   return (
     <Appear t0={t0}>
-      <div style={{ ...card, padding: "48px 40px", textAlign: "center", background: "linear-gradient(180deg,#fff,#ffe9d6)" }}>
+      <div style={{ ...card, padding: "48px 40px", textAlign: "center", background: V.callout }}>
         <div style={{ fontSize: 64, fontWeight: 800, color: accent, letterSpacing: 1 }}>{b.title}</div>
-        {b.sub ? <div style={{ fontSize: 28, color: C.mute, margin: "12px 0 28px" }}>{b.sub}</div> : null}
+        {b.sub ? <div style={{ fontSize: 28, color: V.mute, margin: "12px 0 28px" }}>{b.sub}</div> : null}
         {b.cta ? <div style={{ display: "inline-block", background: accent, color: "#fff", borderRadius: 40, padding: "14px 36px", fontWeight: 800, fontSize: 30 }}>{b.cta}</div> : null}
       </div>
     </Appear>
@@ -386,7 +428,7 @@ const ListView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
         <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
           {items.map((it, i) => (
             <Appear key={i} t0={t0 + 0.35 + i * 0.3}>
-              <div style={{ display: "flex", alignItems: "center", gap: 18, background: "#f7f3ea", borderRadius: 20, padding: "14px 18px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 18, background: V.row2, borderRadius: 20, padding: "14px 18px" }}>
                 <div style={{ width: 48, height: 48, borderRadius: 24, background: C.green, color: "#fff", fontWeight: 800, fontSize: 26, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</div>
                 <div style={{ fontSize: 30, fontWeight: 600 }}>{it}</div>
               </div>
@@ -420,15 +462,81 @@ const StatView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
 };
 
 const ImageView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
-  const { t, name } = React.useContext(Ctx);
+  const { t, name, mute: pageMute } = React.useContext(Ctx);
   const zoom = 1 + 0.06 * clamp01((t - t0) / 6); // zoom pelan supaya gambar diam tidak terasa mati
+  if (b.frame === false) {
+    // gambar transparan (produk/karakter): tanpa kartu, utuh (contain), melayang pelan + bayangan
+    return (
+      <Appear t0={t0}>
+        <div style={{ height: b.h || 760, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {b.src ? (
+            <Img src={staticFile(`${name}/${b.src}`)} style={{ maxWidth: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 18px 24px rgba(0,0,0,.25))", transform: `translateY(${Math.sin(t * 2) * 8}px)` }} />
+          ) : null}
+        </div>
+        {b.caption ? <div style={{ fontSize: 28, fontWeight: 600, textAlign: "center", marginTop: 8, color: pageMute }}>{b.caption}</div> : null}
+      </Appear>
+    );
+  }
   return (
     <Appear t0={t0}>
       <div style={{ ...card, padding: 14 }}>
-        <div style={{ height: b.h || 640, borderRadius: 22, overflow: "hidden", background: C.soft }}>
+        <div style={{ height: b.h || 640, borderRadius: 22, overflow: "hidden", background: V.soft }}>
           {b.src ? <Img src={staticFile(`${name}/${b.src}`)} style={{ width: "100%", height: "100%", objectFit: "cover", transform: `scale(${zoom})` }} /> : null}
         </div>
-        {b.caption ? <div style={{ fontSize: 28, fontWeight: 600, textAlign: "center", margin: "14px 0 4px", color: C.mute }}>{b.caption}</div> : null}
+        {b.caption ? <div style={{ fontSize: 28, fontWeight: 600, textAlign: "center", margin: "14px 0 4px", color: V.mute }}>{b.caption}</div> : null}
+      </div>
+    </Appear>
+  );
+};
+
+const MeterView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
+  const { t, accent } = React.useContext(Ctx);
+  const v = Math.max(0, Math.min(100, b.pct ?? 0));
+  const k = clamp01((t - t0) / 1.2);
+  const cells = 20;
+  const filled = Math.round(cells * (v / 100) * k);
+  return (
+    <Appear t0={t0}>
+      <div style={{ ...card, padding: "22px 26px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 800, fontSize: 30, letterSpacing: 1 }}>
+          <span>{b.title}</span>
+          <span style={{ color: accent }}>{Math.round(v * k)}%</span>
+        </div>
+        <div style={{ display: "flex", gap: 6, marginTop: 16 }}>
+          {Array.from({ length: cells }, (_, i) => (
+            <div key={i} style={{ flex: 1, height: 34, borderRadius: 6, background: i < filled ? accent : "rgba(128,128,128,.25)" }} />
+          ))}
+        </div>
+        {b.label ? <div style={{ fontSize: 24, color: V.mute, marginTop: 12 }}>{b.label}</div> : null}
+      </div>
+    </Appear>
+  );
+};
+
+const BarsView: React.FC<{ b: Item; t0: number }> = ({ b, t0 }) => {
+  const { t, accent } = React.useContext(Ctx);
+  const items = (b.bars || []).slice(0, 6);
+  const hi = b.hi ?? items.length - 1;
+  const H = 360;
+  return (
+    <Appear t0={t0}>
+      <div style={{ ...card, padding: "26px 26px 18px" }}>
+        {b.title ? <div style={{ fontWeight: 800, fontSize: 30, marginBottom: 16 }}>{b.title}</div> : null}
+        <div style={{ display: "flex", alignItems: "flex-end", gap: 14, height: H }}>
+          {items.map((it, i) => {
+            const k = clamp01((t - t0 - i * 0.18) / 0.7);
+            const e = 1 - Math.pow(1 - k, 3);
+            const h = Math.max(8, (Math.max(0, Math.min(100, it.value)) / 100) * (H - 40)) * e;
+            return (
+              <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", alignItems: "center", height: "100%" }}>
+                <div style={{ width: "100%", height: h, borderRadius: "10px 10px 0 0", background: i === hi ? accent : V.bar, boxShadow: i === hi ? `0 0 22px ${accent}88` : undefined }} />
+              </div>
+            );
+          })}
+        </div>
+        <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
+          {items.map((it, i) => <div key={i} style={{ flex: 1, textAlign: "center", fontSize: 22, color: V.mute, fontWeight: 600 }}>{it.label}</div>)}
+        </div>
       </div>
     </Appear>
   );
@@ -446,6 +554,8 @@ const StageItem: React.FC<{ b: Item; i: number }> = ({ b, i }) => {
     case "list": return <ListView b={b} t0={t0} />;
     case "stat": return <StatView b={b} t0={t0} />;
     case "image": return <ImageView b={b} t0={t0} />;
+    case "meter": return <MeterView b={b} t0={t0} />;
+    case "bars": return <BarsView b={b} t0={t0} />;
     case "files":
       return (
         <Appear t0={t0}>
@@ -471,7 +581,7 @@ const Header: React.FC<{ brand: string; tag: string }> = ({ brand, tag }) => (
   </div>
 );
 
-const SpriteMascot: React.FC<{ name: string; img: string; talkImg?: string; x: number; flip: boolean; pose: string; f: number; talk: number; ent: number }> = ({ name, img, talkImg, x, flip, pose, f, talk, ent }) => {
+const SpriteMascot: React.FC<{ name: string; img: string; talkImg?: string; x: number; flip: boolean; pose: string; f: number; talk: number; ent: number; feet: number }> = ({ name, img, talkImg, x, flip, pose, f, talk, ent, feet }) => {
   let dy = Math.sin(f / 9) * 4;
   let rot = Math.sin(f / 25) * 1.2;
   if (pose === "cheer") { dy = -Math.abs(Math.sin(f / 5)) * 34; rot += Math.sin(f / 5) * 3; }
@@ -482,7 +592,7 @@ const SpriteMascot: React.FC<{ name: string; img: string; talkImg?: string; x: n
   const sx = 1 - 0.012 * talk;
   const sy = 1 + 0.03 * talk;
   return (
-    <div style={{ position: "absolute", left: x, top: 1800, height: 520, display: "grid", transformOrigin: "50% 100%", transform: `translate(-50%, -100%) translate(0px, ${dy + (1 - ent) * 420}px) rotate(${rot}deg) scale(${(flip ? -1 : 1) * sx}, ${sy})` }}>
+    <div style={{ position: "absolute", left: x, top: feet, height: 520, display: "grid", transformOrigin: "50% 100%", transform: `translate(-50%, -100%) translate(0px, ${dy + (1 - ent) * 420}px) rotate(${rot}deg) scale(${(flip ? -1 : 1) * sx}, ${sy})` }}>
       <Img src={staticFile(`${name}/${img}`)} style={{ gridArea: "1 / 1", height: "100%", width: "auto" }} />
       {talkImg ? <Img src={staticFile(`${name}/${talkImg}`)} style={{ gridArea: "1 / 1", height: "100%", width: "auto", opacity: talk > 0.25 ? 1 : 0 }} /> : null}
     </div>
@@ -491,17 +601,18 @@ const SpriteMascot: React.FC<{ name: string; img: string; talkImg?: string; x: n
 
 // judul 2 tingkat: `small` kata pertama = baris kecil, sisanya = baris besar; tiap kata muncul saat diucapkan
 const Headline: React.FC<{ ws: W[]; small: number; solo?: boolean }> = ({ ws, small, solo }) => {
-  const { accent, ink, mute } = React.useContext(Ctx);
+  const { accent, ink, mute, theme } = React.useContext(Ctx);
+  const hudTheme = theme === "hud";
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const big = ws.slice(small);
   const bigSize = Math.round((big.length <= 3 ? 124 : big.length <= 5 ? 100 : big.length <= 8 ? 82 : 68) * (solo ? 1.25 : 1));
   const line = (arr: W[], size: number, weight: number, base: string) => (
-    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: `0 ${size * 0.28}px`, fontSize: size, fontWeight: weight, lineHeight: 1.15 }}>
+    <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: `0 ${size * 0.28}px`, fontSize: size, fontWeight: weight, lineHeight: 1.15, textTransform: hudTheme ? "uppercase" : undefined }}>
       {arr.map((w, i) => {
         const s = clamp01(spring({ frame: frame - Math.round(w.a * fps), fps, config: { damping: 14, stiffness: 200 } }));
         return (
-          <span key={i} style={{ display: "inline-block", opacity: s > 0.02 ? clamp01(s * 2) : 0, transform: `translateY(${(1 - s) * 24}px)`, color: w.hl ? accent : base }}>{w.w}</span>
+          <span key={i} style={{ display: "inline-block", opacity: s > 0.02 ? clamp01(s * 2) : 0, transform: `translateY(${(1 - s) * 24}px)`, color: w.hl ? accent : base, textShadow: hudTheme && w.hl ? `0 0 22px ${accent}aa` : undefined }}>{w.w}</span>
         );
       })}
     </div>
@@ -514,6 +625,88 @@ const Headline: React.FC<{ ws: W[]; small: number; solo?: boolean }> = ({ ws, sm
   );
 };
 
+// ================= TEMA HUD / HOLOGRAM =================
+const MONO = "ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'DejaVu Sans Mono', monospace";
+
+const HudBackdrop: React.FC<{ f: number; accent: string }> = ({ f, accent }) => {
+  const dots = Array.from({ length: 22 }, (_, i) => {
+    const x = (i * 197) % 1080;
+    const y = 1900 - ((f * (0.8 + (i % 5) * 0.35) + i * 131) % 1900);
+    const sz = 3 + (i % 3) * 2;
+    const col = i % 4 === 0 ? HUD_ORANGE : accent;
+    return <div key={i} style={{ position: "absolute", left: x, top: y, width: sz, height: sz, borderRadius: sz, background: col, opacity: 0.25 + 0.5 * Math.abs(Math.sin(f / 20 + i)), boxShadow: `0 0 10px ${col}` }} />;
+  });
+  const br = (pos: React.CSSProperties, bw: React.CSSProperties) => (
+    <div style={{ position: "absolute", width: 90, height: 90, border: `0 solid ${accent}`, opacity: 0.75, ...pos, ...bw }} />
+  );
+  return (
+    <AbsoluteFill>
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at 50% 38%, #12305f 0%, #081a3a 48%, #030a1a 100%)" }} />
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 760, perspective: 700, perspectiveOrigin: "50% 0%", overflow: "hidden", WebkitMaskImage: "linear-gradient(to top, #000 25%, transparent 100%)", maskImage: "linear-gradient(to top, #000 25%, transparent 100%)" }}>
+        <div style={{ position: "absolute", left: "-50%", width: "200%", top: 0, height: 1800, transformOrigin: "50% 0%", transform: "rotateX(72deg)", backgroundImage: `linear-gradient(${accent}55 2px, transparent 2px), linear-gradient(90deg, ${accent}55 2px, transparent 2px)`, backgroundSize: "90px 90px", backgroundPosition: `0 ${(f * 2) % 90}px` }} />
+      </div>
+      {dots}
+      <AbsoluteFill style={{ backgroundImage: "repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0px, rgba(255,255,255,.035) 1px, transparent 1px, transparent 4px)" }} />
+      <AbsoluteFill style={{ background: "radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.45) 100%)" }} />
+      {br({ left: 26, top: 26 }, { borderTopWidth: 5, borderLeftWidth: 5 })}
+      {br({ right: 26, top: 26 }, { borderTopWidth: 5, borderRightWidth: 5 })}
+      {br({ left: 26, bottom: 26 }, { borderBottomWidth: 5, borderLeftWidth: 5 })}
+      {br({ right: 26, bottom: 26 }, { borderBottomWidth: 5, borderRightWidth: 5 })}
+    </AbsoluteFill>
+  );
+};
+
+const HudLabel: React.FC<{ text: string; brand: string; base: number; t: number; accent: string }> = ({ text, brand, base, t, accent }) => {
+  const n = Math.floor(Math.max(0, t - base) * 28);
+  const cursor = Math.floor(t * 2.5) % 2 === 0 ? "\u258C" : " ";
+  return (
+    <div style={{ position: "absolute", left: 64, right: 64, top: 66, display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: 26, letterSpacing: 2, color: accent, textShadow: `0 0 10px ${accent}88` }}>
+      <div>{text.slice(0, n)}{cursor}</div>
+      {brand ? <div style={{ color: "#9fb3d1", fontSize: 22, textShadow: "none" }}>{brand.toUpperCase()}</div> : null}
+    </div>
+  );
+};
+
+const groupsOf = (words: W[]) => {
+  const g: W[][] = [];
+  let cur: W[] = [];
+  words.forEach((w) => {
+    if (cur.length && (cur.length >= 4 || cur[0].s !== w.s)) { g.push(cur); cur = []; }
+    cur.push(w);
+    if (/[.?!,]$/.test(w.w)) { g.push(cur); cur = []; }
+  });
+  if (cur.length) g.push(cur);
+  return g;
+};
+
+const HudCaption: React.FC<{ words: W[]; t: number; accent: string }> = ({ words, t, accent }) => {
+  const groups = groupsOf(words);
+  let gi = -1;
+  for (let i = 0; i < groups.length; i++) if (t >= groups[i][0].a - 0.05) gi = i;
+  if (gi < 0) return null;
+  const g = groups[gi];
+  if (t > g[g.length - 1].b + 0.6) return null;
+  return (
+    <div style={{ position: "absolute", left: 70, right: 70, top: 1535, display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "4px 20px", padding: "22px 30px", borderRadius: 30, background: "rgba(5,15,35,.78)", border: `2px solid ${accent}99`, boxShadow: `0 0 26px ${accent}44, inset 0 0 18px ${accent}18`, fontWeight: 800, fontSize: 56, lineHeight: 1.2, color: "#fff" }}>
+      {g.map((w, i) => {
+        const active = t >= w.a && t < w.b;
+        const spoken = t >= w.b;
+        return <span key={i} style={{ color: w.hl || active ? accent : "#fff", opacity: spoken || active ? 1 : 0.45, textShadow: active ? `0 0 16px ${accent}` : undefined }}>{w.w}</span>;
+      })}
+    </div>
+  );
+};
+
+const HoloRing: React.FC<{ x: number; y: number; f: number; accent: string }> = ({ x, y, f, accent }) => (
+  <svg viewBox="0 0 1080 1920" width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0 }}>
+    <g transform={`translate(${x},${y})`} fill="none">
+      <circle r={230} stroke={accent} strokeWidth={3} strokeDasharray="14 12" opacity={0.7} transform={`rotate(${f * 0.5})`} />
+      <circle r={285} stroke={HUD_ORANGE} strokeWidth={3} strokeDasharray="40 18" opacity={0.6} transform={`rotate(${-f * 0.35})`} />
+      <circle r={190} stroke={accent} strokeWidth={2} opacity={0.35} />
+    </g>
+  </svg>
+);
+
 const fallbackWords = (title: string, start: number, idx: number): W[] =>
   title.split(" ").filter(Boolean).map((raw, i) => ({ w: raw.replace(/\*/g, ""), hl: raw.includes("*"), a: start + i * 0.25, b: start + i * 0.25 + 0.25, s: idx }));
 
@@ -523,7 +716,8 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
   if (!d) return null;
   const data = d as unknown as Data;
   const t = frame / fps;
-  const accent = data.accent || C.red;
+  const hud = data.theme === "hud";
+  const accent = data.accent || (hud ? HUD_CYAN : C.red);
 
   let idx = 0;
   data.scenes.forEach((s, i) => { if (t >= s.start - 1e-6) idx = i; });
@@ -549,7 +743,7 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
     return BG_PRESETS[data.bgMode === "auto" ? bgNames[Math.floor(i / every) % bgNames.length] : bgNames[0]];
   };
   const preset = presetFor(idx);
-  const ink = data.textColor || preset.ink;
+  const ink = data.textColor || (hud ? "#ffffff" : preset.ink);
 
   // jenis transisi masuk per adegan: "transition" di adegan, atau dari daftar global (berurutan / acak)
   const tlist = (data.transitions || []).filter((x) => TRANS.includes(x));
@@ -565,8 +759,12 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
   const inTrans = idx > 0 && tkind !== "none" && t - base < TD;
   const pair = transPair(tkind, (t - base) / TD);
 
-  const hasHeader = data.header !== false && !!(data.brand || data.tag);
+  const hasHeader = data.header !== false && (hud || !!(data.brand || data.tag));
   const dy = hasHeader ? 0 : -80;
+  const feet = hud ? 1470 : 1800;
+  const wsMain = (data.words || []).filter((w) => w.s === idx);
+  const hlWord = (wsMain.find((w) => w.hl) || wsMain[0] || { w: "" }).w.replace(/[.,!?;:"'*]/g, "").toUpperCase();
+  const hudLabel = sc.label || `${(data.tag || "STATUS").toUpperCase()}: ${hlWord}`;
   const cstyle = data.charStyle || "block";
   const poseName = sc.pose || "idle";
 
@@ -580,12 +778,12 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
     const hm = !!s.mascot;
     const p = presetFor(i);
     return (
-      <Ctx.Provider key={"L" + i} value={{ ws: wsI, base: s.start, t, accent, name, ink: data.textColor || p.ink, mute: data.textColor || p.mute }}>
+      <Ctx.Provider key={"L" + i} value={{ ws: wsI, base: s.start, t, accent, name, ink: data.textColor || (hud ? "#ffffff" : p.ink), mute: data.textColor || (hud ? "#9fb3d1" : p.mute), theme: hud ? "hud" : "clean" }}>
         <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, ...wrap }}>
-          <div style={{ position: "absolute", left: 50, right: 50, top: solo ? 420 : 190 + dy, height: solo ? 800 : 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10, textAlign: "center" }}>
+          <div style={{ position: "absolute", left: 50, right: 50, top: solo ? 420 : hud ? 150 : 190 + dy, height: solo ? 800 : 300, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10, textAlign: "center" }}>
             <Headline ws={wsI} small={sm} solo={solo} />
           </div>
-          <div style={{ position: "absolute", left: 60, right: 60, top: (hm ? 500 : 520) + dy, bottom: hm ? 520 : 200, display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
+          <div style={{ position: "absolute", left: 60, right: 60, top: hud ? (hm ? 480 : 500) : (hm ? 500 : 520) + dy, bottom: hud ? (hm ? 790 : 440) : (hm ? 520 : 200), display: "flex", flexDirection: "column", justifyContent: "center", gap: 28 }}>
             {(s.stage || []).map((b, bi) => <StageItem key={bi} b={b} i={bi} />)}
           </div>
         </div>
@@ -596,19 +794,21 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
   const prevPreset = idx > 0 ? presetFor(idx - 1) : preset;
 
   return (
-    <AbsoluteFill style={{ ...bgStyle(preset), fontFamily: FONT, color: ink }}>
+    <AbsoluteFill style={{ ...(hud ? { backgroundColor: "#030a1a", ...HUD_VARS } : bgStyle(preset)), fontFamily: FONT, color: ink }}>
       <Audio src={staticFile(name + "/mix.wav")} />
-      {inTrans && prevPreset !== preset ? (
+      {hud ? <HudBackdrop f={frame} accent={accent} /> : null}
+      {!hud && inTrans && prevPreset !== preset ? (
         <div style={{ position: "absolute", left: 0, top: 0, width: 1080, height: 1920, ...bgStyle(prevPreset), opacity: 1 - easeIO(clamp01((t - base) / TD)) }} />
       ) : null}
       {inTrans ? layer(idx - 1, pair.out) : null}
       {layer(idx, inTrans ? pair.inn : {})}
-      {hasHeader ? <Header brand={data.brand || ""} tag={data.tag || ""} /> : null}
+      {hasHeader ? (hud ? <HudLabel text={hudLabel} brand={data.brand || ""} base={base} t={t} accent={accent} /> : <Header brand={data.brand || ""} tag={data.tag || ""} />) : null}
+      {hud && hasMascot ? <HoloRing x={mx} y={feet - 190 + (1 - ent) * 420} f={frame} accent={accent} /> : null}
       {hasMascot && cstyle === "sprite" && data.charImg ? (
-        <SpriteMascot name={name} img={data.charImg} talkImg={data.charTalkImg} x={mx} flip={flip} pose={poseName} f={frame} talk={talk ?? 0} ent={ent} />
+        <SpriteMascot name={name} img={data.charImg} talkImg={data.charTalkImg} x={mx} flip={flip} pose={poseName} f={frame} talk={talk ?? 0} ent={ent} feet={feet} />
       ) : hasMascot ? (
-        <svg viewBox="0 0 1080 1920" width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0 }}>
-          <g transform={`translate(${mx},${1800 + (1 - ent) * 420}) scale(${flip ? -0.62 : 0.62},0.62)`}>
+        <svg viewBox="0 0 1080 1920" width={1080} height={1920} style={{ position: "absolute", left: 0, top: 0, filter: hud ? `drop-shadow(0 0 14px ${accent}99)` : undefined }}>
+          <g transform={`translate(${mx},${feet + (1 - ent) * 420}) scale(${flip ? -0.62 : 0.62},0.62)`}>
             <ellipse cx={0} cy={4} rx={100} ry={14} fill="#000" opacity={0.15} />
             {cstyle === "stick" && typeof Stick !== "undefined" ? (
               <Stick pose={poseName as Pose} color={data.charColor || "#222"} f={frame} type={data.char} talk={talk} />
@@ -618,6 +818,7 @@ export const Explainer: React.FC<StoryProps> = ({ name, data: d }) => {
           </g>
         </svg>
       ) : null}
+      {hud ? <HudCaption words={data.words || []} t={t} accent={accent} /> : null}
       {data.cta && frame >= ctaStart ? (
         <AbsoluteFill style={{ alignItems: "center", justifyContent: "flex-end", paddingBottom: 110 }}>
           <div style={{ padding: "22px 52px", borderRadius: 60, background: accent, color: "#fff", fontWeight: 800, fontSize: 46, fontFamily: FONT }}>{data.cta}</div>
